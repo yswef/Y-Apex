@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+out/
+dist/
+TestResults/
+.scaffold/
+*.bak
+.env
+*.pfx
+*.snk
+
+# خاص بالمالك ولا يُرفع
+_private/
+
