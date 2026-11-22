@@ -1,0 +1,61 @@
+# © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
+# تنبيه: ثبّت إصدارات الـ actions بعد المراجعة (SHA)، وDependabot يحدّثها.
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build and test
+        if: ${{ hashFiles('**/*.sln') != '' }}
+        run: |
+          dotnet restore
+          dotnet build -c Release --no-restore
+          dotnet test -c Release --no-build
+      - name: Vulnerable packages
+        if: ${{ hashFiles('**/*.sln') != '' }}
+        run: dotnet list package --vulnerable --include-transitive
+      - name: SBOM
+        if: ${{ hashFiles('**/*.sln') != '' }}
+        run: |
+          dotnet tool install --global CycloneDX
+          dotnet-CycloneDX (Get-ChildItem -Recurse -Filter *.sln | Select-Object -First 1).FullName -o sbom
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('sbom/**') != '' }}
+        with:
+          name: sbom
+          path: sbom
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  codeql:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        if: ${{ hashFiles('**/*.sln') != '' }}
+        with:
+          languages: csharp
+      - uses: actions/setup-dotnet@v4
+        if: ${{ hashFiles('**/*.sln') != '' }}
+        with:
+          dotnet-version: '10.0.x'
+      - uses: github/codeql-action/autobuild@v3
+        if: ${{ hashFiles('**/*.sln') != '' }}
+      - uses: github/codeql-action/analyze@v3
+        if: ${{ hashFiles('**/*.sln') != '' }}

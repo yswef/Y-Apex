@@ -1,0 +1,23 @@
+# © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
+# نشر موقع التوثيق يدوياً فقط (workflow_dispatch) ولا ينشر تلقائياً.
+name: Docs site
+on: workflow_dispatch
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp config/shared-links.json site/shared-links.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: d
+        uses: actions/deploy-pages@v4
