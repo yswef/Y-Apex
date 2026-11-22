@@ -1,0 +1,11 @@
+/* © ENG.YSWEF — 170477919+yswef@users.noreply.github.com */
+:root{--bg:#f6f7f9;--cd:#fff;--tx:#1b2430;--ac:#1f6feb;--bd:#dde2e8;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--cd:#18202b;--tx:#e6ebf2;--ac:#5aa2ff;--bd:#2a3544}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.8 system-ui,"Segoe UI",Tahoma,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--cd);border-bottom:1px solid var(--bd)}
+main{max-width:760px;margin:0 auto;padding:16px}
+section{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;margin:14px 0}
+a{color:var(--ac)}
+button{font:inherit;color:var(--ac);background:transparent;border:1px solid var(--ac);border-radius:8px;padding:2px 12px;margin-inline-start:6px}
+footer{text-align:center;padding:20px;opacity:.7}

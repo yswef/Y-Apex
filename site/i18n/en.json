@@ -1,0 +1,18 @@
+{
+  "tagline": "A Windows firewall and connection monitor",
+  "status": "Status: planning phase. No release yet.",
+  "f_title": "Features",
+  "f1": "Live connections list per program",
+  "f2": "One-click block with preview and rollback",
+  "f3": "Prompt on a new program's first connection",
+  "f4": "Offline first, no tracking",
+  "d_title": "Docs and links",
+  "s_title": "Support the developer",
+  "copy": "Copy",
+  "l_repo": "Repository",
+  "l_issues": "Report an issue",
+  "l_changelog": "Changelog",
+  "l_license": "License",
+  "l_privacy": "Privacy policy",
+  "l_buyMeACoffee": "Buy Me a Coffee"
+}
