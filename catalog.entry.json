@@ -1,0 +1,7 @@
+{
+  "_note": "مؤقت: عدّل الحقول لتطابق مخطط catalog.json المعتمد في منظومة YSWEF.",
+  "id": "y-apex",
+  "name": "Y-Apex",
+  "version": "0.0.0",
+  "dataDir": "%APPDATA%\\YSWEF\\Y-Apex"
+}
