@@ -238,7 +238,7 @@ public sealed class SqliteChangeJournal : IChangeJournal
         return result;
     }
 
-    private byte[] Unprotect(byte[] value)
+    private static byte[] Unprotect(byte[] value)
     {
         if (value.AsSpan().StartsWith(ProtectedPayloadMarker))
         {

@@ -173,7 +173,7 @@ public sealed partial class WindowsConnectionSource : IConnectionSource
         return CreateConnection(process, new IPAddress(localAddress, scope), localPort, null, 0, NetworkProtocol.Udp, ConnectionState.Listening, observedAt);
     }
 
-    private ConnectionRecord CreateConnection(
+    private static ConnectionRecord CreateConnection(
         ProcessIdentity process,
         IPAddress localAddress,
         int localPort,

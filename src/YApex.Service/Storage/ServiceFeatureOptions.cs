@@ -7,6 +7,12 @@ public sealed record ServiceFeatureOptions(bool ExperimentalWfpEnabled = false);
 
 public static class ServiceFeatureOptionsLoader
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        MaxDepth = 8,
+        UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow
+    };
+
     public static ServiceFeatureOptions Load()
     {
         var path = Path.Combine(ServiceDataPaths.RootDirectory, "features.json");
@@ -19,11 +25,8 @@ public static class ServiceFeatureOptionsLoader
                 return new ServiceFeatureOptions();
             }
 
-            return JsonSerializer.Deserialize<ServiceFeatureOptions>(File.ReadAllText(path), new JsonSerializerOptions
-            {
-                MaxDepth = 8,
-                UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow
-            }) ?? new ServiceFeatureOptions();
+            return JsonSerializer.Deserialize<ServiceFeatureOptions>(File.ReadAllText(path), JsonOptions)
+                ?? new ServiceFeatureOptions();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
         {
