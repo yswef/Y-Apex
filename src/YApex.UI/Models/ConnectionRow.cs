@@ -35,7 +35,7 @@ public sealed class ConnectionRow(ConnectionRecord value) : INotifyPropertyChang
     public string SignatureText => Value.Process.Signature switch
     {
         SignatureState.Valid => LocalizationService.Get("SignatureValid"),
-        SignatureState.Unsigned => LocalizationService.Get("SignatureUnsigned"),
+        SignatureState.NotSigned => LocalizationService.Get("SignatureUnsigned"),
         SignatureState.Invalid => LocalizationService.Get("SignatureInvalid"),
         _ => LocalizationService.Get("StateUnknown")
     };

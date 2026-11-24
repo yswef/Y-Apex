@@ -83,11 +83,11 @@ public static class OfflineLicenseVerifier
     }
 }
 
-public sealed class ProFeatureAccess
+public static class ProFeatureAccess
 {
-    public bool IsAvailable(ProFeature feature) => Enum.IsDefined(feature);
+    public static bool IsAvailable(ProFeature feature) => Enum.IsDefined(feature);
 
-    public bool IsLicenseRequired(ProFeature feature)
+    public static bool IsLicenseRequired(ProFeature feature)
     {
         _ = feature;
         return false;

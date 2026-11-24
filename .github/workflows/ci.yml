@@ -15,7 +15,19 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Restore
-        run: dotnet restore YApex.sln
+        shell: pwsh
+        run: |
+          $restoreOutput = & dotnet restore YApex.sln --verbosity minimal 2>&1
+          $restoreExitCode = $LASTEXITCODE
+          $restoreOutput | ForEach-Object { Write-Output $_ }
+          if ($restoreExitCode -ne 0) {
+            $diagnostics = $restoreOutput | Where-Object { "$_" -match '(?i)(error|warning|failed|unable|NU[0-9]{4})' } | Select-Object -Last 20
+            foreach ($diagnostic in $diagnostics) {
+              $message = "$diagnostic" -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+              Write-Output "::error::$message"
+            }
+            throw "dotnet restore failed with exit code $restoreExitCode."
+          }
       - name: Build
         run: dotnet build YApex.sln -c Release --no-restore
       - name: Test
@@ -81,7 +93,10 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - uses: github/codeql-action/autobuild@v3
+      - name: Restore for CodeQL
+        run: dotnet restore YApex.sln --verbosity minimal
+      - name: Build for CodeQL
+        run: dotnet build YApex.sln -c Release --no-restore
       - uses: github/codeql-action/analyze@v3
   gitleaks:
     runs-on: ubuntu-latest

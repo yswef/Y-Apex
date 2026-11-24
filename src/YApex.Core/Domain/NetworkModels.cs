@@ -32,7 +32,7 @@ public enum SignatureState
     Unknown,
     Valid,
     Invalid,
-    Unsigned
+    NotSigned
 }
 
 public sealed record ProcessIdentity(

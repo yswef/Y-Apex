@@ -33,7 +33,7 @@ public static partial class WindowsSignatureVerifier
             var signature = status switch
             {
                 0 => SignatureState.Valid,
-                _ when unchecked((uint)status) == NoSignatureStatus => SignatureState.Unsigned,
+                _ when unchecked((uint)status) == NoSignatureStatus => SignatureState.NotSigned,
                 _ => SignatureState.Invalid
             };
             string? publisher = null;
