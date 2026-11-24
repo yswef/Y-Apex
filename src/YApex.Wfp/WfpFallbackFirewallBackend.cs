@@ -8,7 +8,7 @@ public sealed class WfpUnavailableException(string message) : Exception(message)
 
 public sealed class ExperimentalWfpFirewallBackend : IFirewallBackend
 {
-    public bool IsReady => false;
+    public static bool IsReady => false;
 
     public Task<IReadOnlyList<ManagedFirewallRule>> GetOwnedRulesAsync(CancellationToken cancellationToken) =>
         throw Unavailable();

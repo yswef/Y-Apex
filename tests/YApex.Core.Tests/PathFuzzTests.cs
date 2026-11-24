@@ -21,7 +21,7 @@ public sealed class PathFuzzTests
             {
                 var normalized = WindowsProgramPath.Normalize(candidate);
                 Assert.True(char.IsAsciiLetter(normalized[0]));
-                Assert.False(normalized.Split('\\').Any(segment => segment is "." or ".."));
+                Assert.DoesNotContain(normalized.Split('\\'), segment => segment is "." or "..");
                 Assert.False(normalized.StartsWith("\\\\", StringComparison.Ordinal));
             }
             catch (ArgumentException)
