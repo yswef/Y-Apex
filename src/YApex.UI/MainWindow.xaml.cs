@@ -29,7 +29,7 @@ using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace YApex.UI;
 
-public partial class MainWindow : Window
+public sealed partial class MainWindow : Window, IDisposable
 {
     private static readonly ConcurrentDictionary<string, CompositeFormat> LocalizedFormats = new(StringComparer.Ordinal);
     private static readonly JsonSerializerOptions ExportJsonOptions = new() { WriteIndented = true };
@@ -37,7 +37,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<FirewallRuleRow> _rules = [];
     private readonly ObservableCollection<UsageRow> _usageRows = [];
     private readonly ObservableCollection<JournalRow> _journalRows = [];
-    private readonly SemaphoreSlim _refreshGate = new(1, 1);
+    private int _refreshInProgress;
     private readonly SharedLinks _sharedLinks;
     private readonly DispatcherTimer _refreshTimer;
     private readonly ICollectionView _connectionView;
@@ -104,10 +104,14 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Window_Closed(object? sender, EventArgs e)
+    private void Window_Closed(object? sender, EventArgs e) => Dispose();
+
+    public void Dispose()
     {
         _refreshTimer.Stop();
-        _trayIcon?.Dispose();
+        var trayIcon = _trayIcon;
+        _trayIcon = null;
+        trayIcon?.Dispose();
     }
 
     private async void RefreshTimer_Tick(object? sender, EventArgs e)
@@ -440,7 +444,7 @@ public partial class MainWindow : Window
 
     private async Task RefreshConnectionsAsync()
     {
-        if (!_refreshGate.Wait(0))
+        if (Interlocked.CompareExchange(ref _refreshInProgress, 1, 0) != 0)
         {
             return;
         }
@@ -505,7 +509,7 @@ public partial class MainWindow : Window
         }
         finally
         {
-            _refreshGate.Release();
+            Volatile.Write(ref _refreshInProgress, 0);
         }
     }
 
@@ -1036,7 +1040,7 @@ public partial class MainWindow : Window
                connection.ProtocolText.Contains(query, StringComparison.OrdinalIgnoreCase);
     }
 
-    private void SelectComboItem(ComboBox combo, string tag)
+    private static void SelectComboItem(ComboBox combo, string tag)
     {
         combo.SelectedItem = combo.Items
             .OfType<ComboBoxItem>()
