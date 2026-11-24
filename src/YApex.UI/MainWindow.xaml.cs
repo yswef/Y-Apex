@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -288,7 +289,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var dialog = new SaveFileDialog
+        var dialog = new Microsoft.Win32.SaveFileDialog
         {
             FileName = "y-apex-connections",
             Filter = "JSON (*.json)|*.json|CSV (*.csv)|*.csv",
@@ -739,7 +740,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var dialog = new SaveFileDialog
+        var dialog = new Microsoft.Win32.SaveFileDialog
         {
             FileName = "y-apex-activity",
             Filter = "CSV (*.csv)|*.csv",

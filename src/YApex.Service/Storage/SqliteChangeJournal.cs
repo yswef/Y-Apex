@@ -178,7 +178,7 @@ public sealed class SqliteChangeJournal : IChangeJournal
         return summaries;
     }
 
-    private ChangeJournalEntry DeserializeEntry(byte[] payload, string storedOperationId, string storedStateText)
+    private static ChangeJournalEntry DeserializeEntry(byte[] payload, string storedOperationId, string storedStateText)
     {
         var json = Unprotect(payload);
         var entry = JsonSerializer.Deserialize<ChangeJournalEntry>(json)

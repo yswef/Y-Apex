@@ -19,13 +19,15 @@ public static class LocalizationService
             ?? throw new InvalidDataException("The selected locale file is empty.");
         _values = loaded;
         CurrentLanguage = selected;
-        var resources = Application.Current.Resources;
+        var resources = System.Windows.Application.Current.Resources;
         foreach (var pair in loaded)
         {
             resources[pair.Key] = pair.Value;
         }
 
-        resources["TextFlowDirection"] = selected == "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        resources["TextFlowDirection"] = selected == "ar"
+            ? System.Windows.FlowDirection.RightToLeft
+            : System.Windows.FlowDirection.LeftToRight;
     }
 
     public static string Get(string key) => _values.TryGetValue(key, out var value) ? value : key;
