@@ -1,36 +1,88 @@
 # © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
-# تنبيه: ثبّت إصدارات الـ actions بعد المراجعة (SHA)، وDependabot يحدّثها.
+# ثبّت إصدارات الـ actions بعد المراجعة (SHA)، وDependabot يحدّثها.
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 permissions:
   contents: read
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - name: Build and test
-        if: ${{ hashFiles('**/*.sln') != '' }}
+      - name: Restore
+        run: dotnet restore YApex.sln
+      - name: Build
+        run: dotnet build YApex.sln -c Release --no-restore
+      - name: Test
+        run: dotnet test YApex.sln -c Release --no-build --logger "trx;LogFileName=tests.trx"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore
+      - name: Build portable Windows package
+        shell: pwsh
+        run: ./tools/build-portable.ps1 -Runtime win-x64
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Build installer and checksums
+        shell: pwsh
         run: |
-          dotnet restore
-          dotnet build -c Release --no-restore
-          dotnet test -c Release --no-build
-      - name: Vulnerable packages
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        run: dotnet list package --vulnerable --include-transitive
-      - name: SBOM
-        if: ${{ hashFiles('**/*.sln') != '' }}
+          New-Item -ItemType Directory -Path out/installer -Force | Out-Null
+          $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+          $compilerPath = if ($null -ne $compiler) { $compiler.Source } else { $null }
+          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+            $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+            $candidate = Join-Path $programFilesX86 'Inno Setup 6/ISCC.exe'
+            if (Test-Path -LiteralPath $candidate) { $compilerPath = $candidate }
+          }
+          if ([string]::IsNullOrWhiteSpace($compilerPath)) { throw 'Inno Setup compiler was not found after installation.' }
+          & $compilerPath installer/Y-Apex.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
+          ./tools/generate-sha256sums.ps1 -Target out/installer
+      - name: Upload Windows test package
+        uses: actions/upload-artifact@v7
+        with:
+          name: Y-Apex-Windows-x64
+          path: |
+            out/portable/win-x64
+            out/installer
+          if-no-files-found: error
+          retention-days: 30
+      - name: Check vulnerable dependencies
+        run: dotnet list YApex.sln package --vulnerable --include-transitive
+      - name: Generate SBOM
+        shell: pwsh
         run: |
           dotnet tool install --global CycloneDX
-          dotnet-CycloneDX (Get-ChildItem -Recurse -Filter *.sln | Select-Object -First 1).FullName -o sbom
-      - uses: actions/upload-artifact@v7
-        if: ${{ hashFiles('sbom/**') != '' }}
+          dotnet-CycloneDX YApex.sln -o sbom
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom
+  codeql:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
   gitleaks:
     runs-on: ubuntu-latest
     steps:
@@ -40,22 +92,3 @@ jobs:
       - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  codeql:
-    runs-on: windows-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: github/codeql-action/init@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        with:
-          languages: csharp
-      - uses: actions/setup-dotnet@v6
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        with:
-          dotnet-version: '10.0.x'
-      - uses: github/codeql-action/autobuild@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}
-      - uses: github/codeql-action/analyze@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}

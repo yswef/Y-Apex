@@ -1,0 +1,57 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Core", "src\YApex.Core\YApex.Core.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F101}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Service", "src\YApex.Service\YApex.Service.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F102}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.UI", "src\YApex.UI\YApex.UI.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F103}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Wfp", "src\YApex.Wfp\YApex.Wfp.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F104}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Cli", "src\YApex.Cli\YApex.Cli.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F105}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Core.Tests", "tests\YApex.Core.Tests\YApex.Core.Tests.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F106}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YApex.Service.Tests", "tests\YApex.Service.Tests\YApex.Service.Tests.csproj", "{8A010793-7F3D-4A9A-AE16-0050CBA0F107}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F101}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F101}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F101}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F102}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F103}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F103}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F103}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F104}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F104}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F104}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F104}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F105}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F105}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F105}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F106}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F106}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F106}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F106}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8A010793-7F3D-4A9A-AE16-0050CBA0F107}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+EndGlobal
