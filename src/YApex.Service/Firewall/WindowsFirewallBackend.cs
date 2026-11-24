@@ -114,9 +114,9 @@ public sealed class WindowsFirewallBackend : IFirewallBackend, IDisposable
     {
         rule = null!;
         dynamic source = ruleObject;
-        var name = Convert.ToString(source.Name, CultureInfo.InvariantCulture);
-        var description = Convert.ToString(source.Description, CultureInfo.InvariantCulture);
-        var pathValue = Convert.ToString(source.ApplicationName, CultureInfo.InvariantCulture);
+        var name = Convert.ToString((object?)source.Name, CultureInfo.InvariantCulture);
+        var description = Convert.ToString((object?)source.Description, CultureInfo.InvariantCulture);
+        var pathValue = Convert.ToString((object?)source.ApplicationName, CultureInfo.InvariantCulture);
         if (name is null || description is null || pathValue is null ||
             !name.StartsWith("Y-Apex ", StringComparison.Ordinal) ||
             !description.StartsWith(RuleFactory.OwnershipMarker + ";", StringComparison.Ordinal))
@@ -134,8 +134,8 @@ public sealed class WindowsFirewallBackend : IFirewallBackend, IDisposable
             return false;
         }
 
-        var directionValue = Convert.ToInt32(source.Direction, CultureInfo.InvariantCulture);
-        var actionValue = Convert.ToInt32(source.Action, CultureInfo.InvariantCulture);
+        var directionValue = Convert.ToInt32((object?)source.Direction, CultureInfo.InvariantCulture);
+        var actionValue = Convert.ToInt32((object?)source.Action, CultureInfo.InvariantCulture);
         if (directionValue is not (1 or 2) || actionValue is not (0 or 1))
         {
             return false;
@@ -191,7 +191,7 @@ public sealed class WindowsFirewallBackend : IFirewallBackend, IDisposable
             return false;
         }
 
-        var enabled = Convert.ToBoolean(source.Enabled, CultureInfo.InvariantCulture);
+        var enabled = Convert.ToBoolean((object?)source.Enabled, CultureInfo.InvariantCulture);
         rule = expected with { Enabled = enabled };
         return true;
     }

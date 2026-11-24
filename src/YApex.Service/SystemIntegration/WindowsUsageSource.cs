@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +14,7 @@ using YApex.Core.Services;
 
 namespace YApex.Service.SystemIntegration;
 
-public sealed class WindowsUsageSource : BackgroundService, IUsageSource
+public sealed partial class WindowsUsageSource : BackgroundService, IUsageSource
 {
     private const int MaximumProgramsPerSnapshot = 32;
     private readonly ILogger<WindowsUsageSource> _logger;
@@ -80,7 +81,7 @@ public sealed class WindowsUsageSource : BackgroundService, IUsageSource
         catch (Exception exception)
         {
             Interlocked.Exchange(ref _captureState, -1);
-            _logger.LogError(exception, "Local ETW network-usage collection could not be started or stopped cleanly.");
+            LogCaptureFailure(_logger, exception);
         }
     }
 
@@ -197,4 +198,10 @@ public sealed class WindowsUsageSource : BackgroundService, IUsageSource
         right > 0 && left > long.MaxValue - right ? long.MaxValue : left + right;
 
     private sealed record CachedProcessInfo(string Name, string Path, DateTimeOffset ExpiresAt);
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Error,
+        Message = "Local ETW network-usage collection could not be started or stopped cleanly.")]
+    private static partial void LogCaptureFailure(ILogger logger, Exception exception);
 }

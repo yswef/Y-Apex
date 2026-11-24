@@ -39,7 +39,9 @@ public static partial class WindowsSignatureVerifier
             string? publisher = null;
             if (signature == SignatureState.Valid)
             {
+#pragma warning disable SYSLIB0057 // This API extracts the Authenticode signer from a PE; X509CertificateLoader has no equivalent operation.
                 using var certificate = X509Certificate.CreateFromSignedFile(path);
+#pragma warning restore SYSLIB0057
                 publisher = certificate.Subject;
             }
 

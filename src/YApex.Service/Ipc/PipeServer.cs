@@ -10,7 +10,7 @@ using YApex.Core.Services;
 
 namespace YApex.Service.Ipc;
 
-public sealed class PipeServer : BackgroundService
+public sealed partial class PipeServer : BackgroundService
 {
     public const string PipeName = "Y-Apex.Control.v1";
     private const int MaximumRequestsPerMinute = 120;
@@ -73,7 +73,7 @@ public sealed class PipeServer : BackgroundService
                 var clientSid = GetClientSid(pipe);
                 if (!_accessPolicy.IsAllowed(clientSid) || !TryConsumeRateLimit())
                 {
-                    _logger.LogWarning("Rejected a pipe client because its SID or request rate was not allowed.");
+                    LogRejectedPipeClient(_logger);
                     continue;
                 }
 
@@ -89,7 +89,7 @@ public sealed class PipeServer : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "A Y-Apex pipe request was rejected.");
+                LogRejectedPipeRequest(_logger, exception);
                 if (request is not null && pipe.IsConnected)
                 {
                     try
@@ -104,7 +104,7 @@ public sealed class PipeServer : BackgroundService
                     }
                     catch (Exception writeException) when (writeException is IOException or OperationCanceledException)
                     {
-                        _logger.LogDebug(writeException, "Could not send a protocol error response.");
+                        LogProtocolErrorResponseFailure(_logger, writeException);
                     }
                 }
             }
@@ -255,4 +255,16 @@ public sealed class PipeServer : BackgroundService
         });
         return sid;
     }
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Warning,
+        Message = "Rejected a pipe client because its SID or request rate was not allowed.")]
+    private static partial void LogRejectedPipeClient(ILogger logger);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "A Y-Apex pipe request was rejected.")]
+    private static partial void LogRejectedPipeRequest(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Debug, Message = "Could not send a protocol error response.")]
+    private static partial void LogProtocolErrorResponseFailure(ILogger logger, Exception exception);
 }
