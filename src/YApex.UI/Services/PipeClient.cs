@@ -6,11 +6,11 @@ using YApex.Core.Protocol;
 
 namespace YApex.UI.Services;
 
-public sealed class PipeClient
+public static class PipeClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    public async Task<T> SendAsync<T>(PipeRequest request, CancellationToken cancellationToken)
+    public static async Task<T> SendAsync<T>(PipeRequest request, CancellationToken cancellationToken)
     {
         await using var pipe = new NamedPipeClientStream(
             ".",
@@ -34,6 +34,6 @@ public sealed class PipeClient
             ?? throw new InvalidDataException("The service returned an empty response payload.");
     }
 
-    public Task<T> SendAsync<T>(string command, CancellationToken cancellationToken) =>
+    public static Task<T> SendAsync<T>(string command, CancellationToken cancellationToken) =>
         SendAsync<T>(new PipeRequest(PipeProtocol.CurrentVersion, Guid.NewGuid(), command), cancellationToken);
 }

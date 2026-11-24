@@ -7,7 +7,7 @@ namespace YApex.UI.Settings;
 
 public static class LocalizationService
 {
-    private static IReadOnlyDictionary<string, string> _values = new Dictionary<string, string>();
+    private static Dictionary<string, string> _values = new();
 
     public static string CurrentLanguage { get; private set; } = "en";
 

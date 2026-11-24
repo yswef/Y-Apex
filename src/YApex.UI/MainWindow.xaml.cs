@@ -1,4 +1,5 @@
 // © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -30,7 +31,8 @@ namespace YApex.UI;
 
 public partial class MainWindow : Window
 {
-    private readonly PipeClient _pipeClient = new();
+    private static readonly ConcurrentDictionary<string, CompositeFormat> LocalizedFormats = new(StringComparer.Ordinal);
+    private static readonly JsonSerializerOptions ExportJsonOptions = new() { WriteIndented = true };
     private readonly ObservableCollection<ConnectionRow> _connections = [];
     private readonly ObservableCollection<FirewallRuleRow> _rules = [];
     private readonly ObservableCollection<UsageRow> _usageRows = [];
@@ -211,7 +213,7 @@ public partial class MainWindow : Window
         UpdateOperationButtons();
         try
         {
-            var result = await _pipeClient.SendAsync<UndoResponse>(
+            var result = await PipeClient.SendAsync<UndoResponse>(
                 new PipeRequest(PipeProtocol.CurrentVersion, Guid.NewGuid(), PipeCommands.Undo, OperationId: operation.OperationId),
                 CancellationToken.None);
             RemoveCurrentOperation(operation.OperationId);
@@ -248,7 +250,7 @@ public partial class MainWindow : Window
         UpdateOperationButtons();
         try
         {
-            var result = await _pipeClient.SendAsync<ConfirmResponse>(
+            var result = await PipeClient.SendAsync<ConfirmResponse>(
                 new PipeRequest(PipeProtocol.CurrentVersion, Guid.NewGuid(), PipeCommands.ConfirmConnectivity, OperationId: operation.OperationId),
                 CancellationToken.None);
             if (result.Confirmed)
@@ -327,7 +329,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                var json = JsonSerializer.Serialize(exportConnections.Select(row => row.Value), new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(exportConnections.Select(row => row.Value), ExportJsonOptions);
                 await File.WriteAllTextAsync(dialog.FileName, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
             }
         }
@@ -369,7 +371,7 @@ public partial class MainWindow : Window
             ? LocalizationService.Get("LogsUnavailable")
             : _journalRows.Count == 0
                 ? LocalizationService.Get("LogsEmpty")
-                : string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("LogsRecentCount"), _journalRows.Count);
+                : FormatLocalized("LogsRecentCount", _journalRows.Count);
         BuildWalletButtons();
         ServiceStatusText.Text = LocalizationService.Get(_serviceAvailable ? "ServiceRunning" : "ServiceStopped");
         ConnectionHintText.Text = _serviceAvailable
@@ -457,7 +459,7 @@ public partial class MainWindow : Window
             ConnectionPage page;
             try
             {
-                page = await _pipeClient.SendAsync<ConnectionPage>(request, timeout.Token);
+                page = await PipeClient.SendAsync<ConnectionPage>(request, timeout.Token);
             }
             catch (Exception exception) when (offset > 0 && IsExpectedServiceFailure(exception))
             {
@@ -465,7 +467,7 @@ public partial class MainWindow : Window
                 _connectionOffset = 0;
                 _connectionSnapshotId = null;
                 request = request with { RequestId = Guid.NewGuid(), Offset = 0, SnapshotId = null };
-                page = await _pipeClient.SendAsync<ConnectionPage>(request, timeout.Token);
+                page = await PipeClient.SendAsync<ConnectionPage>(request, timeout.Token);
             }
 
             _connectionOffset = page.Offset;
@@ -521,12 +523,7 @@ public partial class MainWindow : Window
         var first = page.Offset + 1;
         var last = page.Offset + page.Connections.Count;
         var total = page.IsTruncated ? $"{page.TotalCount:N0}+" : page.TotalCount.ToString("N0", CultureInfo.CurrentCulture);
-        PageStatusText.Text = string.Format(
-            CultureInfo.CurrentCulture,
-            LocalizationService.Get("ConnectionsPage"),
-            first,
-            last,
-            total);
+        PageStatusText.Text = FormatLocalized("ConnectionsPage", first, last, total);
         ConnectionHintText.Text = page.IsTruncated ? LocalizationService.Get("ConnectionsTruncated") : string.Empty;
     }
 
@@ -539,7 +536,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var rules = await _pipeClient.SendAsync<ManagedFirewallRule[]>(PipeCommands.GetRules, cancellationToken);
+            var rules = await PipeClient.SendAsync<ManagedFirewallRule[]>(PipeCommands.GetRules, cancellationToken);
             _rules.Clear();
             foreach (var rule in rules)
             {
@@ -558,7 +555,7 @@ public partial class MainWindow : Window
 
     private async Task RefreshOperationsAsync(CancellationToken cancellationToken)
     {
-        var operations = await _pipeClient.SendAsync<ActiveRuleOperation[]>(PipeCommands.GetOperations, cancellationToken);
+        var operations = await PipeClient.SendAsync<ActiveRuleOperation[]>(PipeCommands.GetOperations, cancellationToken);
         if (_operationRequestInFlight)
         {
             return;
@@ -618,7 +615,7 @@ public partial class MainWindow : Window
             RememberProgramPath(pathHash);
             var prompt = string.Join(
                 Environment.NewLine,
-                string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("FirstConnectionPrompt"), connection.ProcessName, normalizedPath),
+                FormatLocalized("FirstConnectionPrompt", connection.ProcessName, normalizedPath),
                 LocalizationService.Get("FirstConnectionOptions"));
             var choice = MessageBox.Show(
                 this,
@@ -664,7 +661,7 @@ public partial class MainWindow : Window
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-            var snapshot = await _pipeClient.SendAsync<UsageSnapshot>(PipeCommands.GetUsage, timeout.Token);
+            var snapshot = await PipeClient.SendAsync<UsageSnapshot>(PipeCommands.GetUsage, timeout.Token);
             TotalSentText.Text = UsageRow.FormatBytes(snapshot.BytesSent);
             TotalReceivedText.Text = UsageRow.FormatBytes(snapshot.BytesReceived);
             _usageRows.Clear();
@@ -708,7 +705,7 @@ public partial class MainWindow : Window
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-            var entries = await _pipeClient.SendAsync<ChangeJournalSummary[]>(PipeCommands.GetJournal, timeout.Token);
+            var entries = await PipeClient.SendAsync<ChangeJournalSummary[]>(PipeCommands.GetJournal, timeout.Token);
             _journalRows.Clear();
             foreach (var entry in entries)
             {
@@ -717,7 +714,7 @@ public partial class MainWindow : Window
 
             LogsStatusText.Text = entries.Length == 0
                 ? LocalizationService.Get("LogsEmpty")
-                : string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("LogsRecentCount"), entries.Length);
+                : FormatLocalized("LogsRecentCount", entries.Length);
             _lastJournalRefresh = DateTimeOffset.UtcNow;
         }
         catch (Exception exception) when (IsExpectedServiceFailure(exception))
@@ -797,7 +794,7 @@ public partial class MainWindow : Window
         UpdateOperationButtons();
         try
         {
-            var preview = await _pipeClient.SendAsync<RuleChangePreview>(
+            var preview = await PipeClient.SendAsync<RuleChangePreview>(
                 new PipeRequest(
                     PipeProtocol.CurrentVersion,
                     Guid.NewGuid(),
@@ -820,7 +817,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var result = await _pipeClient.SendAsync<RuleChangeResult>(
+            var result = await PipeClient.SendAsync<RuleChangeResult>(
                 new PipeRequest(
                     PipeProtocol.CurrentVersion,
                     Guid.NewGuid(),
@@ -866,7 +863,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var result = await _pipeClient.SendAsync<ConfirmResponse>(
+        var result = await PipeClient.SendAsync<ConfirmResponse>(
             new PipeRequest(PipeProtocol.CurrentVersion, Guid.NewGuid(), PipeCommands.ConfirmConnectivity, OperationId: operation.OperationId),
             CancellationToken.None);
         if (result.Confirmed)
@@ -888,7 +885,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var result = await _pipeClient.SendAsync<UndoResponse>(
+        var result = await PipeClient.SendAsync<UndoResponse>(
             new PipeRequest(PipeProtocol.CurrentVersion, Guid.NewGuid(), PipeCommands.Undo, OperationId: operation.OperationId),
             CancellationToken.None);
         RemoveCurrentOperation(operation.OperationId);
@@ -915,16 +912,16 @@ public partial class MainWindow : Window
         UpdateOperationButtons();
         try
         {
-            var preview = await _pipeClient.SendAsync<EmergencyRemovalPreview>(
+            var preview = await PipeClient.SendAsync<EmergencyRemovalPreview>(
                 PipeCommands.EmergencyPreview,
                 CancellationToken.None);
             var sample = preview.SampleRules.Select(rule =>
                 $"{rule.ProgramPath} — {LocalizationService.Get($"Direction{rule.Direction}")} — {LocalizationService.Get(rule.Action.ToString())}");
             var details = string.Join(Environment.NewLine,
-                string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("EmergencyPreviewCount"), preview.RuleCount),
+                FormatLocalized("EmergencyPreviewCount", preview.RuleCount),
                 string.Join(Environment.NewLine, sample),
                 preview.RuleCount > preview.SampleRules.Count
-                    ? string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("EmergencyAdditionalRules"), preview.RuleCount - preview.SampleRules.Count)
+                    ? FormatLocalized("EmergencyAdditionalRules", preview.RuleCount - preview.SampleRules.Count)
                     : string.Empty,
                 LocalizationService.Get("Emergency"));
             if (MessageBox.Show(this, details, LocalizationService.Get("ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
@@ -932,7 +929,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var result = await _pipeClient.SendAsync<EmergencyResponse>(
+            var result = await PipeClient.SendAsync<EmergencyResponse>(
                 new PipeRequest(
                     PipeProtocol.CurrentVersion,
                     Guid.NewGuid(),
@@ -944,7 +941,7 @@ public partial class MainWindow : Window
             UpdateOperationButtons();
             _lastRulesRefresh = DateTimeOffset.MinValue;
             UpdateTrayState();
-            ShowMessage(string.Format(CultureInfo.CurrentCulture, LocalizationService.Get("EmergencyDone"), result.RemovedRules));
+            ShowMessage(FormatLocalized("EmergencyDone", result.RemovedRules));
             _connectionOffset = 0;
             _connectionSnapshotId = null;
             await RefreshConnectionsAsync();
@@ -989,7 +986,7 @@ public partial class MainWindow : Window
             {
                 Content = $"{wallet.Name} — {LocalizationService.Get("CopyWallet")}",
                 Tag = wallet,
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left
             };
             button.Click += WalletButton_Click;
             WalletsPanel.Children.Add(button);
@@ -1044,6 +1041,13 @@ public partial class MainWindow : Window
         combo.SelectedItem = combo.Items
             .OfType<ComboBoxItem>()
             .FirstOrDefault(item => string.Equals(item.Tag as string, tag, StringComparison.Ordinal));
+    }
+
+    private static string FormatLocalized(string key, params object?[] arguments)
+    {
+        var template = LocalizationService.Get(key);
+        var format = LocalizedFormats.GetOrAdd(template, static value => CompositeFormat.Parse(value));
+        return string.Format(CultureInfo.CurrentCulture, format, arguments);
     }
 
     private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
