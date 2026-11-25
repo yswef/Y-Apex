@@ -53,7 +53,7 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 
 [Run]
 #ifdef YAPEX_HEADLESS_INSTALLER_SMOKE_TEST
-; The smoke test registers its CI client SID after service installation; no Explorer session exists here.
+Filename: "{app}\cli\YApex.Cli.exe"; Parameters: "register-pipe-user"; StatusMsg: "Registering the headless smoke-test account for the service pipe..."; Flags: runhidden waituntilterminated runascurrentuser
 #else
 Filename: "{app}\cli\YApex.Cli.exe"; Parameters: "register-pipe-user --interactive"; StatusMsg: "Registering the signed-in desktop account for the local service pipe..."; Flags: runhidden waituntilterminated runascurrentuser
 #endif

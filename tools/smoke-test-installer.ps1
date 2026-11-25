@@ -62,24 +62,28 @@ try {
         throw 'The installed Windows service did not reach Running state.'
     }
 
-    # Headless CI has no Explorer session. Enroll its admin client SID, then restart the service so the pipe ACL is refreshed.
-    $registrationOutput = & $cliExe register-pipe-user 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "The client SID could not be registered for the smoke test: $($registrationOutput -join ' ')"
+    $registeredSidPath = Join-Path $dataDirectory 'pipe-user.sid'
+    if (-not (Test-Path -LiteralPath $registeredSidPath -PathType Leaf)) {
+        throw 'The headless installer did not enroll a client SID before starting the service.'
     }
-    $serviceForAclRefresh = Get-Service -Name $serviceName -ErrorAction Stop
-    $serviceForAclRefresh.Stop()
-    $serviceForAclRefresh.WaitForStatus(
-        [System.ServiceProcess.ServiceControllerStatus]::Stopped,
-        [TimeSpan]::FromSeconds(30))
-    $serviceForAclRefresh.Start()
-    $serviceForAclRefresh.WaitForStatus(
-        [System.ServiceProcess.ServiceControllerStatus]::Running,
-        [TimeSpan]::FromSeconds(30))
+    $registeredSid = [System.IO.File]::ReadAllText($registeredSidPath).Trim()
+    $currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    if ($registeredSid -ne $currentSid) {
+        throw 'The headless installer enrolled a different Windows account than the smoke-test CLI.'
+    }
 
-    $statusOutput = & $cliExe status 2>&1
-    $statusCode = $LASTEXITCODE
-    $statusText = ($statusOutput | ForEach-Object { "$_" }) -join [Environment]::NewLine
+    # The SCM can report Running just before the hosted named-pipe server is ready; retry this read-only probe.
+    $statusDeadline = [DateTime]::UtcNow.AddSeconds(20)
+    do {
+        $statusOutput = & $cliExe status 2>&1
+        $statusCode = $LASTEXITCODE
+        $statusText = ($statusOutput | ForEach-Object { "$_" }) -join [Environment]::NewLine
+        if ($statusCode -eq 0 -and $statusText -match 'Service is running\. Y-Apex rules: 0\.') {
+            break
+        }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTime]::UtcNow -lt $statusDeadline)
+
     if ($statusCode -ne 0 -or $statusText -notmatch 'Service is running\. Y-Apex rules: 0\.') {
         throw "The installed CLI could not query a clean service over the named pipe. Exit=$statusCode; output=$statusText"
     }
