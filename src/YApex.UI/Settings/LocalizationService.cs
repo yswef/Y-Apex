@@ -1,0 +1,34 @@
+// © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
+using System.IO;
+using System.Text.Json;
+using System.Windows;
+
+namespace YApex.UI.Settings;
+
+public static class LocalizationService
+{
+    private static Dictionary<string, string> _values = new();
+
+    public static string CurrentLanguage { get; private set; } = "en";
+
+    public static void Apply(string language)
+    {
+        var selected = language is "ar" or "en" ? language : "en";
+        var path = Path.Combine(AppContext.BaseDirectory, "locales", selected + ".json");
+        var loaded = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path))
+            ?? throw new InvalidDataException("The selected locale file is empty.");
+        _values = loaded;
+        CurrentLanguage = selected;
+        var resources = System.Windows.Application.Current.Resources;
+        foreach (var pair in loaded)
+        {
+            resources[pair.Key] = pair.Value;
+        }
+
+        resources["TextFlowDirection"] = selected == "ar"
+            ? System.Windows.FlowDirection.RightToLeft
+            : System.Windows.FlowDirection.LeftToRight;
+    }
+
+    public static string Get(string key) => _values.TryGetValue(key, out var value) ? value : key;
+}

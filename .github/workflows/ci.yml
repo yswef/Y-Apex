@@ -1,36 +1,167 @@
 # © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
-# تنبيه: ثبّت إصدارات الـ actions بعد المراجعة (SHA)، وDependabot يحدّثها.
+# ثبّت إصدارات الـ actions بعد المراجعة (SHA)، وDependabot يحدّثها.
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 permissions:
   contents: read
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - name: Build and test
-        if: ${{ hashFiles('**/*.sln') != '' }}
+      - name: Restore
+        shell: pwsh
         run: |
-          dotnet restore
-          dotnet build -c Release --no-restore
-          dotnet test -c Release --no-build
-      - name: Vulnerable packages
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        run: dotnet list package --vulnerable --include-transitive
-      - name: SBOM
-        if: ${{ hashFiles('**/*.sln') != '' }}
+          $restoreOutput = & dotnet restore YApex.sln --verbosity minimal 2>&1
+          $restoreExitCode = $LASTEXITCODE
+          $restoreOutput | ForEach-Object { Write-Output $_ }
+          if ($restoreExitCode -ne 0) {
+            $diagnostics = $restoreOutput | Where-Object { "$_" -match '(?i)(error|warning|failed|unable|NU[0-9]{4})' } | Select-Object -Last 20
+            foreach ($diagnostic in $diagnostics) {
+              $message = "$diagnostic" -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+              Write-Output "::error::$message"
+            }
+            throw "dotnet restore failed with exit code $restoreExitCode."
+          }
+      - name: Build
+        run: dotnet build YApex.sln -c Release --no-restore
+      - name: Test
+        run: dotnet test YApex.sln -c Release --no-build --logger "trx;LogFileName=tests.trx"
+      - name: Exercise Windows Firewall rule lifecycle in the isolated runner
+        env:
+          YAPEX_RUN_FIREWALL_MUTATION_TEST: '1'
+        run: dotnet test tests/YApex.Service.Tests/YApex.Service.Tests.csproj -c Release --no-build --filter "FullyQualifiedName~FirewallBackendCreatesAndReplacesOwnedRuleShapesWhenExplicitlyEnabled"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore
+      - name: Build portable Windows package
+        shell: pwsh
+        run: ./tools/build-portable.ps1 -Runtime win-x64
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Build installer and checksums
+        shell: pwsh
+        run: |
+          try {
+            $ErrorActionPreference = 'Stop'
+            $installerOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer'
+            New-Item -ItemType Directory -Path $installerOutput -Force | Out-Null
+            $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+            $compilerPath = if ($null -ne $compiler) { $compiler.Path } else { $null }
+            $programFilesDirectories = @(
+              [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+              [Environment]::GetEnvironmentVariable('ProgramFiles')
+            ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
+            if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+              foreach ($directory in $programFilesDirectories) {
+                $installations = Get-ChildItem -LiteralPath $directory -Directory -Filter 'Inno Setup*' -ErrorAction SilentlyContinue |
+                  Sort-Object Name -Descending
+                foreach ($installation in $installations) {
+                  $candidate = Join-Path $installation.FullName 'ISCC.exe'
+                  if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                    $compilerPath = $candidate
+                    break
+                  }
+                }
+                if (-not [string]::IsNullOrWhiteSpace($compilerPath)) { break }
+              }
+            }
+            if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+              throw "Inno Setup compiler ISCC.exe was not found. Program Files roots checked: $($programFilesDirectories -join '; ')."
+            }
+            $installerScript = Join-Path $env:GITHUB_WORKSPACE 'installer/Y-Apex.iss'
+            if (-not (Test-Path -LiteralPath $installerScript -PathType Leaf)) {
+              throw "Installer script was not found: $installerScript"
+            }
+            foreach ($directory in @('ui', 'service', 'cli')) {
+              $payloadDirectory = Join-Path $env:GITHUB_WORKSPACE "out/portable/win-x64/$directory"
+              if (-not (Test-Path -LiteralPath $payloadDirectory -PathType Container)) {
+                throw "Portable package directory was not found: $payloadDirectory"
+              }
+            }
+            Write-Output "Using Inno Setup compiler: $compilerPath"
+            Write-Output "Compiling installer script: $installerScript"
+            $compilerOutput = & $compilerPath $installerScript 2>&1
+            $compilerExitCode = $LASTEXITCODE
+            $compilerOutput | ForEach-Object { Write-Output "$_" }
+            if ($compilerExitCode -ne 0) {
+              $diagnostics = ($compilerOutput | Select-Object -Last 20 | ForEach-Object { "$_" }) -join ' | '
+              throw "Inno Setup failed with exit code $compilerExitCode. Output: $diagnostics"
+            }
+            ./tools/generate-sha256sums.ps1 -Target $installerOutput
+
+            $smokeOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer-smoke'
+            New-Item -ItemType Directory -Path $smokeOutput -Force | Out-Null
+            Write-Output 'Compiling the headless-only installer variant for the isolated smoke test.'
+            $smokeCompilerOutput = & $compilerPath '-dYAPEX_HEADLESS_INSTALLER_SMOKE_TEST=1' $installerScript 2>&1
+            $smokeCompilerExitCode = $LASTEXITCODE
+            $smokeCompilerOutput | ForEach-Object { Write-Output "$_" }
+            if ($smokeCompilerExitCode -ne 0) {
+              $diagnostics = ($smokeCompilerOutput | Select-Object -Last 20 | ForEach-Object { "$_" }) -join ' | '
+              throw "Inno Setup headless smoke-test build failed with exit code $smokeCompilerExitCode. Output: $diagnostics"
+            }
+            if (-not (Test-Path -LiteralPath (Join-Path $smokeOutput 'Y-Apex-Setup.exe') -PathType Leaf)) {
+              throw "The headless installer variant was not created in $smokeOutput."
+            }
+          }
+          catch {
+            $message = $_.Exception.Message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+            Write-Output "::error::$message"
+            throw
+          }
+      - name: Install and uninstall the built package in the isolated runner
+        shell: pwsh
+        env:
+          YAPEX_INSTALLER_SMOKE_TEST: '1'
+        run: ./tools/smoke-test-installer.ps1 -InstallerPath (Join-Path $env:GITHUB_WORKSPACE 'out/installer-smoke/Y-Apex-Setup.exe')
+      - name: Upload Windows test package
+        uses: actions/upload-artifact@v7
+        with:
+          name: Y-Apex-Windows-x64
+          path: |
+            out/portable/win-x64
+            out/installer
+          if-no-files-found: error
+          retention-days: 30
+      - name: Check vulnerable dependencies
+        run: dotnet list YApex.sln package --vulnerable --include-transitive
+      - name: Generate SBOM
+        shell: pwsh
         run: |
           dotnet tool install --global CycloneDX
-          dotnet-CycloneDX (Get-ChildItem -Recurse -Filter *.sln | Select-Object -First 1).FullName -o sbom
-      - uses: actions/upload-artifact@v7
-        if: ${{ hashFiles('sbom/**') != '' }}
+          dotnet-CycloneDX YApex.sln -o sbom
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom
+  codeql:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore for CodeQL
+        run: dotnet restore YApex.sln --verbosity minimal
+      - name: Build for CodeQL
+        run: dotnet build YApex.sln -c Release --no-restore
+      - uses: github/codeql-action/analyze@v4
   gitleaks:
     runs-on: ubuntu-latest
     steps:
@@ -40,22 +171,13 @@ jobs:
       - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  codeql:
-    runs-on: windows-latest
+  site-validation:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write
     steps:
       - uses: actions/checkout@v7
-      - uses: github/codeql-action/init@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        with:
-          languages: csharp
-      - uses: actions/setup-dotnet@v6
-        if: ${{ hashFiles('**/*.sln') != '' }}
-        with:
-          dotnet-version: '10.0.x'
-      - uses: github/codeql-action/autobuild@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}
-      - uses: github/codeql-action/analyze@v3
-        if: ${{ hashFiles('**/*.sln') != '' }}
+      - name: Validate documentation links and assets
+        run: |
+          python3 tools/validate-site.py
+          node --check site/app.js

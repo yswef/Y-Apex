@@ -1,41 +1,75 @@
 // © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
 (function () {
-  var lang = 'ar';
-  try { lang = localStorage.getItem('lang') || 'ar'; } catch (e) {}
-  function load(path) { return fetch(path).then(function (r) { return r.json(); }); }
-  function apply(t) {
-    // العربية تغيّر النص واتجاهه فقط، ولا يُعكس التخطيط.
-    document.documentElement.lang = lang;
-    document.querySelectorAll('[data-i]').forEach(function (el) {
-      el.textContent = t[el.dataset.i] || '';
-      el.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  'use strict';
+
+  var languageKey = 'y-apex-docs-language';
+  var supportedLanguages = ['ar', 'en'];
+  var documentRoot = document.documentElement;
+  var toggle = document.getElementById('language-toggle');
+  var skipLink = document.getElementById('skip-link');
+  var brandLink = document.querySelector('.brand');
+
+  function readLanguage() {
+    try {
+      var stored = localStorage.getItem(languageKey);
+      return supportedLanguages.indexOf(stored) >= 0 ? stored : 'ar';
+    } catch (error) {
+      return 'ar';
+    }
+  }
+
+  function applyLanguage(language, persist) {
+    if (supportedLanguages.indexOf(language) < 0) return;
+
+    document.querySelectorAll('[data-locale-content]').forEach(function (panel) {
+      panel.hidden = panel.dataset.localeContent !== language;
+    });
+
+    documentRoot.lang = language;
+    documentRoot.dir = language === 'ar' ? 'rtl' : 'ltr';
+
+    var targetLanguage = language === 'ar' ? 'en' : 'ar';
+    toggle.textContent = targetLanguage === 'ar' ? 'العربية' : 'English';
+    toggle.setAttribute('aria-label', targetLanguage === 'ar' ? 'التبديل إلى العربية' : 'Switch language to English');
+    skipLink.textContent = language === 'ar' ? 'تخطي إلى المحتوى' : 'Skip to content';
+    skipLink.href = '#' + language + '-overview';
+    brandLink.href = '#' + language + '-overview';
+    brandLink.setAttribute('aria-label', language === 'ar' ? 'Y-Apex — الصفحة الرئيسية' : 'Y-Apex — home page');
+
+    if (persist) {
+      try { localStorage.setItem(languageKey, language); } catch (error) {}
+    }
+  }
+
+  function isSafeHttps(value) {
+    try {
+      var url = new URL(value);
+      return url.protocol === 'https:' && url.hostname.length > 0 && !url.username && !url.password;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function applySharedLinks(config) {
+    if (!config || typeof config !== 'object') return;
+    document.querySelectorAll('[data-shared-link]').forEach(function (anchor) {
+      var key = anchor.dataset.sharedLink;
+      if (typeof config[key] === 'string' && isSafeHttps(config[key])) {
+        anchor.href = config[key];
+      }
     });
   }
-  function setLinks(cfg, t) {
-    var ul = document.getElementById('links');
-    ul.innerHTML = '';
-    ['repo', 'issues', 'changelog', 'license', 'privacy', 'buyMeACoffee'].forEach(function (k) {
-      if (!cfg[k] || cfg[k].indexOf('http') !== 0) return;
-      var li = document.createElement('li'), a = document.createElement('a');
-      a.href = cfg[k]; a.rel = 'noopener'; a.textContent = t['l_' + k] || k;
-      li.appendChild(a); ul.appendChild(li);
-    });
-    var w = document.getElementById('wallets');
-    w.innerHTML = '';
-    (cfg.wallets || []).forEach(function (x) {
-      var li = document.createElement('li'), b = document.createElement('button');
-      li.textContent = x.name + ': ' + x.value;
-      b.textContent = t.copy || 'copy';
-      b.onclick = function () { try { navigator.clipboard.writeText(String(x.value)); } catch (e) {} };
-      li.appendChild(b); w.appendChild(li);
-    });
-  }
-  function run() {
-    Promise.all([load('i18n/' + lang + '.json'), load('shared-links.json').catch(function () { return {}; })])
-      .then(function (r) { apply(r[0]); setLinks(r[1], r[0]); });
-  }
-  document.querySelectorAll('[data-l]').forEach(function (b) {
-    b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('lang', lang); } catch (e) {} run(); };
+
+  toggle.addEventListener('click', function () {
+    applyLanguage(documentRoot.lang === 'ar' ? 'en' : 'ar', true);
   });
-  run();
+
+  applyLanguage(readLanguage(), false);
+  fetch('shared-links.json', { cache: 'no-store' })
+    .then(function (response) {
+      if (!response.ok) throw new Error('Shared links are not available.');
+      return response.json();
+    })
+    .then(applySharedLinks)
+    .catch(function () {});
 })();

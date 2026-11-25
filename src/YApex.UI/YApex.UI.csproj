@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>YApex.UI</RootNamespace>
+    <AssemblyName>YApex.UI</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>../../assets/icons/generated/app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../YApex.Core/YApex.Core.csproj" />
+    <Content Include="../../locales/ar.json" Link="locales/ar.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../locales/en.json" Link="locales/en.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../config/shared-links.json" Link="config/shared-links.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../assets/icons/generated/*.ico" Link="assets/icons/generated/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

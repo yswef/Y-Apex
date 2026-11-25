@@ -1,0 +1,359 @@
+<!-- © ENG.YSWEF — 170477919+yswef@users.noreply.github.com -->
+<Window x:Class="YApex.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:automation="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="{DynamicResource AppTitle}"
+        Width="1280" Height="800" MinWidth="980" MinHeight="620"
+        Background="{DynamicResource AppBackground}"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        Loaded="Window_Loaded" StateChanged="Window_StateChanged" Closed="Window_Closed">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FlowDirection="{DynamicResource TextFlowDirection}"
+                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="Width" Value="198" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="Margin" Value="4,3" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14"
+                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Foreground}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentColor}" />
+                    <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="RowBackground" Value="{DynamicResource AppSurface}" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="EnableRowVirtualization" Value="True" />
+            <Setter Property="EnableColumnVirtualization" Value="True" />
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+            <Setter Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="True" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+            <Setter Property="RowHeight" Value="38" />
+            <Setter Property="ColumnHeaderHeight" Value="38" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1" CornerRadius="14" Padding="12,6" Margin="0,0,0,12">
+            <DockPanel LastChildFill="False" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <Border Width="34" Height="34" CornerRadius="10" Background="{DynamicResource AccentColor}" Margin="2,0,10,0">
+                        <TextBlock Text="Y" Foreground="White" FontWeight="Bold" FontSize="18"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="{DynamicResource AppTitle}" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource AppBackground}" CornerRadius="10" Padding="10,6" Margin="4">
+                        <TextBlock x:Name="ServiceStatusText" Text="{DynamicResource ServiceStopped}" FontSize="12"
+                                   AutomationProperties.Name="{DynamicResource ServiceNotice}" />
+                    </Border>
+                    <Button x:Name="UndoButton" Content="{DynamicResource Undo}" Click="Undo_Click" IsEnabled="False" />
+                    <Button x:Name="ConfirmButton" Content="{DynamicResource ConfirmConnection}" Click="Confirm_Click" IsEnabled="False" />
+                    <Button x:Name="EmergencyButton" Content="{DynamicResource Emergency}" Background="{DynamicResource DangerColor}" Foreground="White"
+                            Click="Emergency_Click" AutomationProperties.Name="{DynamicResource Emergency}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="NavigationTabs" Grid.Row="1" TabStripPlacement="Left"
+                    SelectionChanged="NavigationTabs_SelectionChanged"
+                    Background="Transparent" BorderThickness="0" Padding="8,4"
+                    AutomationProperties.Name="{DynamicResource Navigation}">
+            <TabItem Header="{DynamicResource NavConnections}">
+                <Grid Margin="12,4,4,4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{DynamicResource NavConnections}" FontSize="24" FontWeight="SemiBold" Margin="6,2,0,12" />
+                    <DockPanel Grid.Row="1" Margin="2,0,2,10">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <Button Content="{DynamicResource Refresh}" Click="Refresh_Click" />
+                            <Button Content="{DynamicResource ExportConnections}" Click="Export_Click" />
+                        </StackPanel>
+                        <TextBox x:Name="SearchBox" Width="300" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                                 TextChanged="Search_TextChanged" AutomationProperties.Name="{DynamicResource SearchConnections}"
+                                 ToolTip="{DynamicResource SearchConnections}" />
+                    </DockPanel>
+                    <DataGrid x:Name="ConnectionsGrid" Grid.Row="2" Margin="2" SelectionMode="Single"
+                              SelectionUnit="FullRow" CanUserSortColumns="True"
+                              AutomationProperties.Name="{DynamicResource NavConnections}">
+                        <DataGrid.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Padding="6,4" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </DataGrid.GroupStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource Program}" Binding="{Binding ProcessName}" Width="150" />
+                            <DataGridTextColumn Header="{DynamicResource Path}" Binding="{Binding ProgramPath}" Width="2*" />
+                            <DataGridTextColumn Header="{DynamicResource LocalAddress}" Binding="{Binding LocalAddress}" Width="145" />
+                            <DataGridTextColumn Header="{DynamicResource LocalPort}" Binding="{Binding LocalPort}" Width="78" />
+                            <DataGridTextColumn Header="{DynamicResource RemoteAddress}" Binding="{Binding RemoteAddress}" Width="145" />
+                            <DataGridTextColumn Header="{DynamicResource RemotePort}" Binding="{Binding RemotePort}" Width="88" />
+                            <DataGridTextColumn Header="{DynamicResource Protocol}" Binding="{Binding ProtocolText}" Width="78" />
+                            <DataGridTextColumn Header="{DynamicResource State}" Binding="{Binding StateText}" Width="130" />
+                            <DataGridTextColumn Header="{DynamicResource Direction}" Binding="{Binding DirectionText}" Width="100" />
+                            <DataGridTextColumn Header="{DynamicResource Signature}" Binding="{Binding SignatureText}" Width="150" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DockPanel Grid.Row="3" Margin="2,8,2,0">
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock x:Name="ConnectionHintText" Text="{DynamicResource NoConnectionsText}" Foreground="{DynamicResource TextSecondary}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock x:Name="PageStatusText" Foreground="{DynamicResource TextSecondary}" FontSize="11"
+                                       AutomationProperties.LiveSetting="Polite" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <Button x:Name="PreviousPageButton" Content="{DynamicResource PreviousPage}" Click="PreviousPage_Click" IsEnabled="False" />
+                            <Button x:Name="NextPageButton" Content="{DynamicResource NextPage}" Click="NextPage_Click" IsEnabled="False" />
+                            <Button x:Name="AllowButton" Content="{DynamicResource AllowOutbound}" Background="{DynamicResource AccentColor}" Foreground="White" Click="Allow_Click" IsEnabled="False" />
+                            <Button x:Name="BlockButton" Content="{DynamicResource Block}" Background="{DynamicResource DangerColor}" Foreground="White" Click="Block_Click" IsEnabled="False" />
+                        </StackPanel>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavPrograms}">
+                <Grid Margin="16,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{DynamicResource ProgramsTitle}" FontSize="24" FontWeight="SemiBold" Margin="4,0,0,12" />
+                    <TextBlock Grid.Row="1" Text="{DynamicResource RulesUnavailable}" Foreground="{DynamicResource TextSecondary}" Margin="4,0,0,12" />
+                    <DataGrid x:Name="RulesGrid" Grid.Row="2" Margin="2" CanUserSortColumns="True"
+                              AutomationProperties.Name="{DynamicResource NavPrograms}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource Program}" Binding="{Binding ProgramName}" Width="180" />
+                            <DataGridTextColumn Header="{DynamicResource Path}" Binding="{Binding ProgramPath}" Width="2*" />
+                            <DataGridTextColumn Header="{DynamicResource Direction}" Binding="{Binding DirectionText}" Width="140" />
+                            <DataGridTextColumn Header="{DynamicResource Block}" Binding="{Binding ActionText}" Width="120" />
+                            <DataGridCheckBoxColumn Header="{DynamicResource State}" Binding="{Binding Enabled}" Width="90" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavUsage}">
+                <Grid Margin="16,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{DynamicResource UsageTitle}" FontSize="24" FontWeight="SemiBold" Margin="4,0,0,12" />
+                    <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,10">
+                        <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="4">
+                            <StackPanel><TextBlock Text="{DynamicResource TotalSent}" Foreground="{DynamicResource TextSecondary}" /><TextBlock x:Name="TotalSentText" Text="—" FontSize="24" FontWeight="SemiBold" Margin="0,8,0,0" /></StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="4">
+                            <StackPanel><TextBlock Text="{DynamicResource TotalReceived}" Foreground="{DynamicResource TextSecondary}" /><TextBlock x:Name="TotalReceivedText" Text="—" FontSize="24" FontWeight="SemiBold" Margin="0,8,0,0" /></StackPanel>
+                        </Border>
+                    </UniformGrid>
+                    <TextBlock x:Name="UsageStatusText" Grid.Row="2" Text="{DynamicResource EtwCollecting}" Foreground="{DynamicResource TextSecondary}" Margin="6,0,6,8" TextWrapping="Wrap" />
+                    <DataGrid x:Name="UsageGrid" Grid.Row="3" Margin="2" CanUserSortColumns="True"
+                              AutomationProperties.Name="{DynamicResource AppUsage}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource Program}" Binding="{Binding ProgramName}" Width="140" />
+                            <DataGridTextColumn Header="{DynamicResource Path}" Binding="{Binding ProgramPath}" Width="2*" />
+                            <DataGridTextColumn Header="{DynamicResource BytesSent}" Binding="{Binding SentText}" Width="100" />
+                            <DataGridTextColumn Header="{DynamicResource BytesReceived}" Binding="{Binding ReceivedText}" Width="100" />
+                            <DataGridTextColumn Header="{DynamicResource UsageTotal}" Binding="{Binding TotalText}" Width="100" />
+                            <DataGridTemplateColumn Header="{DynamicResource ChartTitle}" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding RelativeUsage}" Height="12" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavLog}">
+                <Grid Margin="16,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{DynamicResource LogsTitle}" FontSize="24" FontWeight="SemiBold" Margin="4,0,0,10" />
+                    <DockPanel Grid.Row="1" Margin="2,0,2,8">
+                        <TextBlock x:Name="LogsStatusText" Text="{DynamicResource LogsUnavailable}" Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <Button Content="{DynamicResource Refresh}" Click="RefreshLogs_Click" />
+                            <Button Content="{DynamicResource ExportJournal}" Click="ExportJournal_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid x:Name="JournalGrid" Grid.Row="2" Margin="2" CanUserSortColumns="True"
+                              AutomationProperties.Name="{DynamicResource LogsTitle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource Timestamp}" Binding="{Binding TimestampText}" Width="160" />
+                            <DataGridTextColumn Header="{DynamicResource State}" Binding="{Binding StateText}" Width="150" />
+                            <DataGridTextColumn Header="{DynamicResource Path}" Binding="{Binding ProgramPath}" Width="2*" />
+                            <DataGridTextColumn Header="{DynamicResource Reason}" Binding="{Binding ReasonText}" Width="220" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavSettings}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16,8" MaxWidth="760" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource SettingsTitle}" FontSize="24" FontWeight="SemiBold" Margin="4,0,0,16" />
+                        <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="4">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource Language}" FontWeight="SemiBold" />
+                                <ComboBox x:Name="LanguageCombo" Width="220" HorizontalAlignment="Left" Margin="0,8,0,6"
+                                          SelectionChanged="LanguageCombo_SelectionChanged" AutomationProperties.Name="{DynamicResource Language}">
+                                    <ComboBoxItem Tag="en"><TextBlock Text="{DynamicResource English}" /></ComboBoxItem>
+                                    <ComboBoxItem Tag="ar"><TextBlock Text="{DynamicResource Arabic}" /></ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="{DynamicResource LanguageNote}" Foreground="{DynamicResource TextSecondary}" />
+                                <TextBlock Text="{DynamicResource Theme}" FontWeight="SemiBold" Margin="0,20,0,0" />
+                                <ComboBox x:Name="ThemeCombo" Width="220" HorizontalAlignment="Left" Margin="0,8,0,6"
+                                          SelectionChanged="ThemeCombo_SelectionChanged" AutomationProperties.Name="{DynamicResource Theme}">
+                                    <ComboBoxItem Tag="system"><TextBlock Text="{DynamicResource ThemeSystem}" /></ComboBoxItem>
+                                    <ComboBoxItem Tag="light"><TextBlock Text="{DynamicResource ThemeLight}" /></ComboBoxItem>
+                                    <ComboBoxItem Tag="dark"><TextBlock Text="{DynamicResource ThemeDark}" /></ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="{DynamicResource ThemeNote}" Foreground="{DynamicResource TextSecondary}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="4">
+                            <StackPanel>
+                                <CheckBox IsEnabled="False" AutomationProperties.Name="{DynamicResource StrictMode}"><TextBlock Text="{DynamicResource StrictMode}" /></CheckBox>
+                                <TextBlock Text="{DynamicResource StrictDescription}" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,12" />
+                                <CheckBox IsEnabled="False" AutomationProperties.Name="{DynamicResource WfpLabel}"><TextBlock Text="{DynamicResource WfpLabel}" /></CheckBox>
+                                <TextBlock Text="{DynamicResource WfpDescription}" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavSupport}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16,8" MaxWidth="780" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource SupportTitle}" FontSize="24" FontWeight="SemiBold" Margin="4,0,0,16" />
+                        <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="4">
+                            <StackPanel>
+                                <Button Content="{DynamicResource BuyMeACoffee}" Tag="buyMeACoffee" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource ReportIssue}" Tag="issues" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource Changelog}" Tag="changelog" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource License}" Tag="license" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource Privacy}" Tag="privacy" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource Repository}" Tag="repo" Click="SupportLink_Click" HorizontalAlignment="Left" />
+                                <Button Content="{DynamicResource CheckUpdates}" Click="CheckUpdates_Click" HorizontalAlignment="Left" />
+                                <StackPanel x:Name="WalletsPanel" Margin="0,10,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource NavAbout}">
+                <Grid Margin="16,8">
+                    <Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="22" HorizontalAlignment="Left" VerticalAlignment="Top" MaxWidth="680">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource AboutTitle}" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,12" />
+                            <TextBlock Text="{DynamicResource AboutDescription}" FontSize="15" Foreground="{DynamicResource TextSecondary}" />
+                            <TextBlock Text="{DynamicResource VersionLabel}" FontWeight="SemiBold" Margin="0,22,0,4" />
+                            <TextBlock x:Name="VersionText" Text="0.1.0" />
+                            <TextBlock Text="{DynamicResource ContactLabel}" FontWeight="SemiBold" Margin="0,18,0,4" />
+                            <TextBlock Text="{DynamicResource ContactValue}" />
+                            <TextBlock Text="{DynamicResource LicenseValue}" Foreground="{DynamicResource TextSecondary}" Margin="0,18,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

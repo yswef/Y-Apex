@@ -1,68 +1,31 @@
 # هيكل المستودع
 
-```
-.editorconfig
-.gitattributes
-.github/
-  ISSUE_TEMPLATE/
-    bug_report.md
-  PULL_REQUEST_TEMPLATE.md
-  dependabot.yml
-  workflows/
-    ci.yml
-    pages.yml
-.gitignore
-CHANGELOG.md
-CONTRIBUTING.md
+```text
+YApex.sln
+SPEC.md
 Directory.Build.props
-LICENSE
-NOTICE.md
-PRIVACY.md
-README.en.md
-README.md
-SECURITY.md
-TASKS.md
-THIRD-PARTY-NOTICES.md
-assets/
-  icons/
-catalog.entry.json
-config/
-  shared-links.json
-docs/
-  architecture.md
-  dev-setup.md
-  glossary.md
-  icons.md
-  localization.md
-  plan.md
-  release.md
-  rules.md
-  spec.md
-  structure.md
-  testing.md
-  threat-model.md
-installer/
-locales/
-  ar.json
-  en.json
-site/
-  .nojekyll
-  app.js
-  i18n/
-    ar.json
-    en.json
-  index.html
-  style.css
 src/
+  YApex.Core/       نماذج، بروتوكول، سياسة قواعد، التحقق
+  YApex.Service/    خدمة Windows، Named Pipe، Firewall COM، IP Helper، SQLite
+  YApex.UI/         تطبيق WPF وصينية النظام واللغات
+  YApex.Wfp/        طبقة WFP تجريبية مغلقة افتراضياً
+  YApex.Cli/        تشخيص وطوارئ عبر Named Pipe
 tests/
-tools/
+  YApex.Core.Tests/
+  YApex.Service.Tests/
+assets/
+  icons/            SVG ومخرجات PNG/ICO
+  placeholders/     عناصر مؤقتة للصور التي لم تُطلب بعد
+config/             روابط الدعم وخيارات الطبقة التجريبية
+locales/            ar.json وen.json
+installer/          سكربت Inno Setup
+tools/              تصدير الأيقونات وPortable وSHA-256 وفحص موقع الوثائق
+site/               موقع توثيق ثابت بالعربية والإنجليزية
+.github/workflows/  CI والتحقق من الموقع وworkflow مُعدّ لمحاولة نشره إلى Pages عند تحديث main؛ النشر الحي غير متحقق بعد
+docs/               المعمارية والتهديدات والخصوصية والمقارنة والبناء والاختبار
+_private/           ملفات خاصة محلية؛ لا تُرفع وفق .gitignore
 ```
 
-- src: الكود (يُنشأ في المرحلة 1).
-- tests: الاختبارات.
-- docs: الوثائق.
-- site: موقع التوثيق العام.
-- config: إعدادات مشتركة مثل روابط الدعم.
-- locales: ملفات الترجمة.
-- installer: سكربتات المثبّت.
-- assets/icons: الأيقونات المصدرية.
+- `Directory.Build.props` يفعّل nullable والتحذيرات كأخطاء وبيانات الإصدار.
+- ملفات المصدر C# وXAML وPowerShell وJavaScript تبدأ بترويسة حقوق ENG.YSWEF والبريد الموجود في إعداد Git.
+- بيانات الخدمة المشتركة في `%ProgramData%\YSWEF\Y-Apex`، وإعدادات الواجهة في `%APPDATA%\YSWEF\Y-Apex`.
