@@ -47,50 +47,62 @@ jobs:
       - name: Build installer and checksums
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $installerOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer'
-          New-Item -ItemType Directory -Path $installerOutput -Force | Out-Null
-          $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
-          $compilerPath = if ($null -ne $compiler) { $compiler.Path } else { $null }
-          $programFilesDirectories = @(
-            [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
-            [Environment]::GetEnvironmentVariable('ProgramFiles')
-          ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
-          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
-            foreach ($directory in $programFilesDirectories) {
-              $installations = Get-ChildItem -LiteralPath $directory -Directory -Filter 'Inno Setup*' -ErrorAction SilentlyContinue |
-                Sort-Object Name -Descending
-              foreach ($installation in $installations) {
-                $candidate = Join-Path $installation.FullName 'ISCC.exe'
-                if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-                  $compilerPath = $candidate
-                  break
+          try {
+            $ErrorActionPreference = 'Stop'
+            $installerOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer'
+            New-Item -ItemType Directory -Path $installerOutput -Force | Out-Null
+            $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
+            $compilerPath = if ($null -ne $compiler) { $compiler.Path } else { $null }
+            $programFilesDirectories = @(
+              [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+              [Environment]::GetEnvironmentVariable('ProgramFiles')
+            ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
+            if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+              foreach ($directory in $programFilesDirectories) {
+                $installations = Get-ChildItem -LiteralPath $directory -Directory -Filter 'Inno Setup*' -ErrorAction SilentlyContinue |
+                  Sort-Object Name -Descending
+                foreach ($installation in $installations) {
+                  $candidate = Join-Path $installation.FullName 'ISCC.exe'
+                  if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                    $compilerPath = $candidate
+                    break
+                  }
                 }
+                if (-not [string]::IsNullOrWhiteSpace($compilerPath)) { break }
               }
-              if (-not [string]::IsNullOrWhiteSpace($compilerPath)) { break }
             }
-          }
-          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
-            throw "Inno Setup compiler ISCC.exe was not found. Program Files roots checked: $($programFilesDirectories -join '; ')."
-          }
-          $installerScript = Join-Path $env:GITHUB_WORKSPACE 'installer/Y-Apex.iss'
-          if (-not (Test-Path -LiteralPath $installerScript -PathType Leaf)) {
-            throw "Installer script was not found: $installerScript"
-          }
-          foreach ($directory in @('ui', 'service', 'cli')) {
-            $payloadDirectory = Join-Path $env:GITHUB_WORKSPACE "out/portable/win-x64/$directory"
-            if (-not (Test-Path -LiteralPath $payloadDirectory -PathType Container)) {
-              throw "Portable package directory was not found: $payloadDirectory"
+            if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+              throw "Inno Setup compiler ISCC.exe was not found. Program Files roots checked: $($programFilesDirectories -join '; ')."
             }
+            $installerScript = Join-Path $env:GITHUB_WORKSPACE 'installer/Y-Apex.iss'
+            if (-not (Test-Path -LiteralPath $installerScript -PathType Leaf)) {
+              throw "Installer script was not found: $installerScript"
+            }
+            foreach ($directory in @('ui', 'service', 'cli')) {
+              $payloadDirectory = Join-Path $env:GITHUB_WORKSPACE "out/portable/win-x64/$directory"
+              if (-not (Test-Path -LiteralPath $payloadDirectory -PathType Container)) {
+                throw "Portable package directory was not found: $payloadDirectory"
+              }
+            }
+            Write-Output "Using Inno Setup compiler: $compilerPath"
+            Write-Output "Compiling installer script: $installerScript"
+            $compilerOutput = & $compilerPath $installerScript 2>&1
+            $compilerExitCode = $LASTEXITCODE
+            $compilerOutput | ForEach-Object { Write-Output "$_" }
+            if ($compilerExitCode -ne 0) {
+              foreach ($diagnostic in ($compilerOutput | Select-Object -Last 20)) {
+                $message = "$diagnostic" -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+                Write-Output "::error::$message"
+              }
+              throw "Inno Setup failed with exit code $compilerExitCode."
+            }
+            ./tools/generate-sha256sums.ps1 -Target $installerOutput
           }
-          Write-Output "Using Inno Setup compiler: $compilerPath"
-          Write-Output "Compiling installer script: $installerScript"
-          & $compilerPath $installerScript
-          $compilerExitCode = $LASTEXITCODE
-          if ($compilerExitCode -ne 0) {
-            throw "Inno Setup failed with exit code $compilerExitCode."
+          catch {
+            $message = $_.Exception.Message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+            Write-Output "::error::$message"
+            throw
           }
-          ./tools/generate-sha256sums.ps1 -Target $installerOutput
       - name: Upload Windows test package
         uses: actions/upload-artifact@v7
         with:
