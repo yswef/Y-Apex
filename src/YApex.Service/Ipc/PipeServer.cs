@@ -71,9 +71,10 @@ public sealed partial class PipeServer : BackgroundService
             {
                 await pipe.WaitForConnectionAsync(stoppingToken).ConfigureAwait(false);
                 var clientSid = GetClientSid(pipe);
-                if (!_accessPolicy.IsAllowed(clientSid) || !TryConsumeRateLimit())
+                var sidAllowed = _accessPolicy.IsAllowed(clientSid);
+                if (!sidAllowed || !TryConsumeRateLimit())
                 {
-                    LogRejectedPipeClient(_logger);
+                    LogRejectedPipeClient(_logger, clientSid?.Value ?? "<unavailable>", sidAllowed);
                     continue;
                 }
 
@@ -259,8 +260,8 @@ public sealed partial class PipeServer : BackgroundService
     [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Warning,
-        Message = "Rejected a pipe client because its SID or request rate was not allowed.")]
-    private static partial void LogRejectedPipeClient(ILogger logger);
+        Message = "Rejected a pipe client because its SID or request rate was not allowed. Client SID: {ClientSid}; SID allowed: {SidAllowed}.")]
+    private static partial void LogRejectedPipeClient(ILogger logger, string clientSid, bool sidAllowed);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "A Y-Apex pipe request was rejected.")]
     private static partial void LogRejectedPipeRequest(ILogger logger, Exception exception);

@@ -85,7 +85,30 @@ try {
     } while ([DateTime]::UtcNow -lt $statusDeadline)
 
     if ($statusCode -ne 0 -or $statusText -notmatch 'Service is running\. Y-Apex rules: 0\.') {
-        throw "The installed CLI could not query a clean service over the named pipe. Exit=$statusCode; output=$statusText"
+        $eventDetails = @()
+        $eventStart = [DateTime]::Now.AddMinutes(-10)
+        foreach ($logName in @('Application', 'System')) {
+            try {
+                $matchingEvents = Get-WinEvent -FilterHashtable @{ LogName = $logName; StartTime = $eventStart } -MaxEvents 100 -ErrorAction Stop |
+                    Where-Object {
+                        $_.ProviderName -match '(?i)(YApex|\.NET Runtime|Application Error|Service Control Manager)' -and
+                        ($_.ProviderName -notmatch '(?i)Service Control Manager' -or $_.Message -match [regex]::Escape($serviceName))
+                    } |
+                    Select-Object -First 8
+                foreach ($event in $matchingEvents) {
+                    $message = ($event.Message -replace '\s+', ' ').Trim()
+                    if ($message.Length -gt 500) {
+                        $message = $message.Substring(0, 500)
+                    }
+                    $eventDetails += "[$logName/$($event.ProviderName) event $($event.Id)] $message"
+                }
+            }
+            catch {
+                $eventDetails += "Could not read $logName event log: $($_.Exception.Message)"
+            }
+        }
+        $eventSummary = if ($eventDetails.Count -gt 0) { $eventDetails -join ' | ' } else { 'No matching service events found.' }
+        throw "The installed CLI could not query a clean service over the named pipe. Exit=$statusCode; output=$statusText; recent service events: $eventSummary"
     }
 
     $emergencyOutput = "REMOVE`n" | & $cliExe emergency-remove 2>&1
