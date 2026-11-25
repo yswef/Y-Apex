@@ -1,9 +1,11 @@
 {
   "buyMeACoffee": "https://buymeacoffee.com/yswef",
-  "issues": "",
-  "changelog": "",
-  "license": "",
-  "privacy": "",
-  "repo": "",
+  "issues": "https://github.com/yswef/Y-Apex/issues",
+  "changelog": "https://github.com/yswef/Y-Apex/blob/main/CHANGELOG.md",
+  "license": "https://github.com/yswef/Y-Apex/blob/main/LICENSE",
+  "privacy": "https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md",
+  "repo": "https://github.com/yswef/Y-Apex",
+  "comparison": "https://github.com/yswef/Y-Apex/blob/main/docs/comparison.md",
+  "releases": "https://github.com/yswef/Y-Apex/releases",
   "wallets": []
 }

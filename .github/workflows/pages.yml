@@ -1,11 +1,21 @@
 # © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
-# نشر موقع التوثيق يدوياً فقط (workflow_dispatch) ولا ينشر تلقائياً.
 name: Docs site
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'config/shared-links.json'
+      - 'tools/validate-site.py'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
+concurrency:
+  group: github-pages-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,7 +24,12 @@ jobs:
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - run: cp config/shared-links.json site/shared-links.json
+      - name: Validate the static documentation site
+        run: |
+          python3 tools/validate-site.py
+          node --check site/app.js
+      - name: Add shared project links
+        run: cp config/shared-links.json site/shared-links.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v5
         with:

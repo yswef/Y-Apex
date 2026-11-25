@@ -19,6 +19,7 @@ public sealed partial class WindowsConnectionSource : IConnectionSource
     private const int TcpTableOwnerPidAll = 5;
     private const int UdpTableOwnerPid = 1;
     private const int MaximumRows = 250_000;
+    private const int MaximumCachedProcesses = 4_096;
     private readonly ConcurrentDictionary<int, CachedIdentity> _processes = new();
 
     public async Task<IReadOnlyList<ConnectionRecord>> GetConnectionsAsync(CancellationToken cancellationToken)
@@ -247,8 +248,39 @@ public sealed partial class WindowsConnectionSource : IConnectionSource
             identity = new ProcessIdentity(pid, "Unknown process", null, null, null, SignatureState.Unknown);
         }
 
-        _processes[pid] = new CachedIdentity(identity, DateTimeOffset.UtcNow.AddSeconds(30));
+        var now = DateTimeOffset.UtcNow;
+        _processes[pid] = new CachedIdentity(identity, now.AddSeconds(30));
+        if (_processes.Count > MaximumCachedProcesses)
+        {
+            TrimProcessCache(now);
+        }
+
         return identity;
+    }
+
+    private void TrimProcessCache(DateTimeOffset now)
+    {
+        foreach (var expired in _processes
+                     .Where(pair => pair.Value.ExpiresAt <= now)
+                     .Select(pair => pair.Key)
+                     .ToArray())
+        {
+            _processes.TryRemove(expired, out _);
+        }
+
+        var excess = _processes.Count - MaximumCachedProcesses;
+        if (excess <= 0)
+        {
+            return;
+        }
+
+        foreach (var oldest in _processes
+                     .OrderBy(pair => pair.Value.ExpiresAt)
+                     .Take(excess)
+                     .Select(pair => pair.Key))
+        {
+            _processes.TryRemove(oldest, out _);
+        }
     }
 
     private static IntPtr ReadTable(TableFunction getTable, int addressFamily, int tableClass, CancellationToken cancellationToken)

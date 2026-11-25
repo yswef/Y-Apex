@@ -1,6 +1,7 @@
 // © ENG.YSWEF — 170477919+yswef@users.noreply.github.com
 using YApex.Core.Abstractions;
 using YApex.Core.Domain;
+using YApex.Core.Security;
 using YApex.Core.Services;
 using Xunit;
 
@@ -20,6 +21,42 @@ public sealed class RuleChangeCoordinatorTests
         Assert.True(await coordinator.UndoAsync(result.OperationId, CancellationToken.None));
         Assert.Empty(await firewall.GetOwnedRulesAsync(CancellationToken.None));
         Assert.Contains(journal.Entries, entry => entry.State == JournalState.RolledBack);
+    }
+
+    [Fact]
+    public async Task AllowCreatesOnlyAnOutboundAllowRule()
+    {
+        using var coordinator = CreateCoordinator(out var firewall, out _, out _);
+        var preview = await coordinator.CreatePreviewAsync("C:\\Apps\\demo.exe", FirewallAction.Allow, CancellationToken.None);
+
+        var plannedRule = Assert.Single(preview.After);
+        Assert.Equal(FirewallDirection.Outbound, plannedRule.Direction);
+        Assert.Equal(FirewallAction.Allow, plannedRule.Action);
+
+        _ = await coordinator.ApplyConfirmedAsync(preview.PreviewId, true, CancellationToken.None);
+        var appliedRule = Assert.Single(await firewall.GetOwnedRulesAsync(CancellationToken.None));
+        Assert.Equal(FirewallDirection.Outbound, appliedRule.Direction);
+        Assert.Equal(FirewallAction.Allow, appliedRule.Action);
+    }
+
+    [Fact]
+    public async Task UndoRestoresLegacyBidirectionalAllowRules()
+    {
+        using var coordinator = CreateCoordinator(out var firewall, out _, out _);
+        const string programPath = "C:\\Apps\\legacy.exe";
+        var legacyRules = new[]
+        {
+            RuleFactory.CreateOwnedRule(programPath, FirewallDirection.Inbound, FirewallAction.Allow),
+            RuleFactory.CreateOwnedRule(programPath, FirewallDirection.Outbound, FirewallAction.Allow)
+        };
+        firewall.SetOwnedRules(legacyRules);
+
+        var preview = await coordinator.CreatePreviewAsync(programPath, FirewallAction.Block, CancellationToken.None);
+        var applied = await coordinator.ApplyConfirmedAsync(preview.PreviewId, true, CancellationToken.None);
+        Assert.All(await firewall.GetOwnedRulesAsync(CancellationToken.None), rule => Assert.Equal(FirewallAction.Block, rule.Action));
+        Assert.True(await coordinator.UndoAsync(applied.OperationId, CancellationToken.None));
+
+        Assert.Equal(legacyRules, await firewall.GetOwnedRulesAsync(CancellationToken.None));
     }
 
     [Fact]
@@ -153,7 +190,7 @@ public sealed class RuleChangeCoordinatorTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.ConfirmEmergencyRemovalAsync(emergency.PreviewId, true, CancellationToken.None));
 
-        Assert.Equal(2, (await firewall.GetOwnedRulesAsync(CancellationToken.None)).Count);
+        Assert.Single(await firewall.GetOwnedRulesAsync(CancellationToken.None));
         Assert.Contains(journal.Entries, entry => entry.State == JournalState.Failed);
     }
 
@@ -165,11 +202,11 @@ public sealed class RuleChangeCoordinatorTests
         _ = await coordinator.ApplyConfirmedAsync(preview.PreviewId, true, CancellationToken.None);
 
         var emergencyPreview = await coordinator.CreateEmergencyRemovalPreviewAsync(CancellationToken.None);
-        Assert.Equal(2, emergencyPreview.RuleCount);
+        Assert.Equal(1, emergencyPreview.RuleCount);
         await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.ConfirmEmergencyRemovalAsync(emergencyPreview.PreviewId, false, CancellationToken.None));
         var removed = await coordinator.ConfirmEmergencyRemovalAsync(emergencyPreview.PreviewId, true, CancellationToken.None);
 
-        Assert.Equal(2, removed);
+        Assert.Equal(1, removed);
         Assert.Empty(await firewall.GetOwnedRulesAsync(CancellationToken.None));
         Assert.Equal(1, firewall.UnownedRuleCount);
     }
@@ -200,6 +237,12 @@ public sealed class RuleChangeCoordinatorTests
         private readonly List<ManagedFirewallRule> _ownedRules = [];
 
         public int UnownedRuleCount { get; private set; } = 1;
+
+        public void SetOwnedRules(IEnumerable<ManagedFirewallRule> rules)
+        {
+            _ownedRules.Clear();
+            _ownedRules.AddRange(rules);
+        }
 
         public Task<IReadOnlyList<ManagedFirewallRule>> GetOwnedRulesAsync(CancellationToken cancellationToken)
         {

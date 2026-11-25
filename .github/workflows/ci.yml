@@ -32,6 +32,10 @@ jobs:
         run: dotnet build YApex.sln -c Release --no-restore
       - name: Test
         run: dotnet test YApex.sln -c Release --no-build --logger "trx;LogFileName=tests.trx"
+      - name: Exercise Windows Firewall rule lifecycle in the isolated runner
+        env:
+          YAPEX_RUN_FIREWALL_MUTATION_TEST: '1'
+        run: dotnet test tests/YApex.Service.Tests/YApex.Service.Tests.csproj -c Release --no-build --filter "FullyQualifiedName~FirewallBackendCreatesAndReplacesOwnedRuleShapesWhenExplicitlyEnabled"
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
@@ -94,12 +98,31 @@ jobs:
               throw "Inno Setup failed with exit code $compilerExitCode. Output: $diagnostics"
             }
             ./tools/generate-sha256sums.ps1 -Target $installerOutput
+
+            $smokeOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer-smoke'
+            New-Item -ItemType Directory -Path $smokeOutput -Force | Out-Null
+            Write-Output 'Compiling the headless-only installer variant for the isolated smoke test.'
+            $smokeCompilerOutput = & $compilerPath '-dYAPEX_HEADLESS_INSTALLER_SMOKE_TEST=1' $installerScript 2>&1
+            $smokeCompilerExitCode = $LASTEXITCODE
+            $smokeCompilerOutput | ForEach-Object { Write-Output "$_" }
+            if ($smokeCompilerExitCode -ne 0) {
+              $diagnostics = ($smokeCompilerOutput | Select-Object -Last 20 | ForEach-Object { "$_" }) -join ' | '
+              throw "Inno Setup headless smoke-test build failed with exit code $smokeCompilerExitCode. Output: $diagnostics"
+            }
+            if (-not (Test-Path -LiteralPath (Join-Path $smokeOutput 'Y-Apex-Setup.exe') -PathType Leaf)) {
+              throw "The headless installer variant was not created in $smokeOutput."
+            }
           }
           catch {
             $message = $_.Exception.Message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
             Write-Output "::error::$message"
             throw
           }
+      - name: Install and uninstall the built package in the isolated runner
+        shell: pwsh
+        env:
+          YAPEX_INSTALLER_SMOKE_TEST: '1'
+        run: ./tools/smoke-test-installer.ps1 -InstallerPath (Join-Path $env:GITHUB_WORKSPACE 'out/installer-smoke/Y-Apex-Setup.exe')
       - name: Upload Windows test package
         uses: actions/upload-artifact@v7
         with:
@@ -148,3 +171,13 @@ jobs:
       - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  site-validation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate documentation links and assets
+        run: |
+          python3 tools/validate-site.py
+          node --check site/app.js

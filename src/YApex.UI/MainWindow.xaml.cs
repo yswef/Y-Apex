@@ -806,14 +806,14 @@ public sealed partial class MainWindow : Window, IDisposable
                     ProgramPath: selected.Value.Process.Path,
                     Action: action == FirewallAction.Block ? "block" : "allow"),
                 CancellationToken.None);
-            var actionText = LocalizationService.Get(action == FirewallAction.Block ? "Block" : "Allow");
             var publisher = string.IsNullOrWhiteSpace(selected.Value.Process.Publisher) ? string.Empty : $"\n{selected.Value.Process.Publisher}";
             var message = string.Join(Environment.NewLine,
                 $"{LocalizationService.Get("Program")}: {selected.ProcessName}",
                 $"{LocalizationService.Get("Path")}: {selected.ProgramPath}",
                 $"{LocalizationService.Get("Signature")}: {selected.SignatureText}{publisher}",
-                $"{LocalizationService.Get("PreviewCurrentState")}: {preview.Before.Count}",
-                $"{LocalizationService.Get("PreviewNewState")}: {actionText} — {preview.After.Count}",
+                $"{LocalizationService.Get("PreviewCurrentState")}:{Environment.NewLine}{FormatRuleList(preview.Before)}",
+                $"{LocalizationService.Get("PreviewNewState")}:{Environment.NewLine}{FormatRuleList(preview.After)}",
+                action == FirewallAction.Allow ? LocalizationService.Get("AllowOutboundOnlyNotice") : string.Empty,
                 LocalizationService.Get("PreviewWarning"),
                 LocalizationService.Get("RollbackWarning"));
             if (MessageBox.Show(this, message, LocalizationService.Get("RulePreview"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
@@ -859,6 +859,12 @@ public sealed partial class MainWindow : Window, IDisposable
             UpdateOperationButtons();
         }
     }
+
+    private static string FormatRuleList(IReadOnlyList<ManagedFirewallRule> rules) =>
+        rules.Count == 0
+            ? LocalizationService.Get("NoManagedRules")
+            : string.Join(Environment.NewLine, rules.Select(rule =>
+                $"  {LocalizationService.Get($"Direction{rule.Direction}")}: {LocalizationService.Get(rule.Action.ToString())}"));
 
     private async Task ConfirmCurrentOperationAsync()
     {

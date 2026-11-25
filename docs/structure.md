@@ -19,9 +19,10 @@ assets/
 config/             روابط الدعم وخيارات الطبقة التجريبية
 locales/            ar.json وen.json
 installer/          سكربت Inno Setup
-tools/              تصدير الأيقونات وPortable وSHA-256
-.github/workflows/  CI فقط؛ لا نشر تلقائي
-docs/               المعمارية، التهديدات، البناء، الاختبار، المصطلحات
+tools/              تصدير الأيقونات وPortable وSHA-256 وفحص موقع الوثائق
+site/               موقع توثيق ثابت بالعربية والإنجليزية
+.github/workflows/  CI والتحقق من الموقع وworkflow مُعدّ لمحاولة نشره إلى Pages عند تحديث main؛ النشر الحي غير متحقق بعد
+docs/               المعمارية والتهديدات والخصوصية والمقارنة والبناء والاختبار
 _private/           ملفات خاصة محلية؛ لا تُرفع وفق .gitignore
 ```
 

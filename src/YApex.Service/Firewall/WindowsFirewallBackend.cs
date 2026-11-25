@@ -178,7 +178,7 @@ public sealed class WindowsFirewallBackend : IFirewallBackend, IDisposable
         ManagedFirewallRule expected;
         try
         {
-            expected = RuleFactory.CreateProgramRules(path, action, identity).Single(candidate => candidate.Direction == direction);
+            expected = RuleFactory.CreateOwnedRule(path, direction, action, identity);
         }
         catch (ArgumentException)
         {
@@ -284,18 +284,23 @@ public sealed class WindowsFirewallBackend : IFirewallBackend, IDisposable
             throw new ArgumentException("Replacement rules must be Y-Apex rules for the requested program path.", nameof(replacement));
         }
 
-        if (replacement.Count is not (0 or 2) ||
-            (replacement.Count == 2 &&
-             (replacement.Select(rule => rule.Direction).Distinct().Count() != 2 ||
-              replacement.Select(rule => rule.Action).Distinct().Count() != 1)))
+        var validShape = replacement.Count switch
         {
-            throw new ArgumentException("A program must have either no rules or one matching inbound and outbound rule.", nameof(replacement));
+            0 => true,
+            1 => replacement[0].Direction == FirewallDirection.Outbound && replacement[0].Action == FirewallAction.Allow,
+            2 => replacement.Select(rule => rule.Direction).Distinct().Count() == 2 &&
+                 replacement.Select(rule => rule.Action).Distinct().Count() == 1,
+            _ => false
+        };
+        if (!validShape)
+        {
+            throw new ArgumentException("A program may have no Y-Apex rules, one outbound allow rule, or a matching inbound/outbound pair.", nameof(replacement));
         }
 
         foreach (var rule in replacement)
         {
             var identity = new ProgramFileIdentity(path, rule.FileSha256, rule.Signature);
-            var expected = RuleFactory.CreateProgramRules(path, rule.Action, identity).Single(candidate => candidate.Direction == rule.Direction);
+            var expected = RuleFactory.CreateOwnedRule(path, rule.Direction, rule.Action, identity);
             if (rule.RuleId != expected.RuleId || rule.Name != expected.Name || rule.Description != expected.Description)
             {
                 throw new ArgumentException("A replacement rule has invalid ownership metadata.", nameof(replacement));

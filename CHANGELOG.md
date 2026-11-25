@@ -1,8 +1,12 @@
-# سجل التغييرات
+# Changelog
 
-## [غير منشور]
-- أُضيف حل .NET 10 بمشاريع Core والخدمة وWPF وCLI وطبقة WFP المعزولة.
-- أُضيف قارئ TCP/UDP عبر IP Helper، وبروتوكول Pipe بإصدار وحد للرسالة، ومعاينة قواعد Windows Firewall مع journal وتراجع زمني وطوارئ.
-- أُضيفت اختبارات Core وخط CI وتوثيق نموذج التهديدات والبناء المحلي.
-- رُبط مصدر ETW وعدّادات الاستخدام المؤقتة، سجل النشاط وتصديره، مطالبة أول اتصال، مزامنة عمليات التراجع، وسكربت المثبّت وإزالة الخدمة.
-- ما زال الوضع الصارم وموفر WFP الحقيقي غير منفذين. لم يُبنَ أو يُختبر الحل على Windows في بيئة هذه الدفعة.
+All notable user-facing changes will be recorded here. This project has no public release yet; build artifacts in CI are for testing only.
+
+## Unreleased
+
+- Built a bilingual documentation site with product-status, privacy, security, installation, troubleshooting, and competitor-comparison sections.
+- Clarified firewall direction behavior: block creates inbound and outbound block rules; allow creates an outbound allow rule only.
+- Improved firewall previews to show the exact current and planned directions/actions.
+- Preserved compatibility with legacy Y-Apex inbound allow rules so they can be read, restored, or removed without creating new ones.
+- Added guarded Windows Firewall COM lifecycle coverage for an isolated temporary executable and bounded the process-identity cache.
+- Added or expanded CI and site validation; no public installer has been released.

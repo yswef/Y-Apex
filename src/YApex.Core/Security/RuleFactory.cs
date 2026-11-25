@@ -20,13 +20,33 @@ public static class RuleFactory
         }
 
         var normalizedPath = WindowsProgramPath.Normalize(programPath);
+        var directions = action == FirewallAction.Block
+            ? new[] { FirewallDirection.Inbound, FirewallDirection.Outbound }
+            : new[] { FirewallDirection.Outbound };
+        return directions.Select(direction => CreateOwnedRule(normalizedPath, direction, action, identity)).ToArray();
+    }
+
+    // Allows a legacy inbound allow rule to be read and restored without creating new ones.
+    public static ManagedFirewallRule CreateOwnedRule(
+        string programPath,
+        FirewallDirection direction,
+        FirewallAction action,
+        ProgramFileIdentity? identity = null)
+    {
+        var normalizedPath = WindowsProgramPath.Normalize(programPath);
+        if (!Enum.IsDefined(direction))
+        {
+            throw new ArgumentOutOfRangeException(nameof(direction));
+        }
+
+        if (!Enum.IsDefined(action))
+        {
+            throw new ArgumentOutOfRangeException(nameof(action));
+        }
+
         var fileHash = NormalizeFileHash(identity, normalizedPath);
         var signature = identity?.Signature ?? SignatureState.Unknown;
-        return
-        [
-            CreateRule(normalizedPath, FirewallDirection.Inbound, action, fileHash, signature),
-            CreateRule(normalizedPath, FirewallDirection.Outbound, action, fileHash, signature)
-        ];
+        return CreateRule(normalizedPath, direction, action, fileHash, signature);
     }
 
     public static bool IsOwnedRule(ManagedFirewallRule rule) =>

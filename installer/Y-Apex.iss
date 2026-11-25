@@ -11,7 +11,11 @@ AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
 DefaultDirName={autopf}\YSWEF\Y-Apex
 DefaultGroupName=Y-Apex
+#ifdef YAPEX_HEADLESS_INSTALLER_SMOKE_TEST
+OutputDir=..\out\installer-smoke
+#else
 OutputDir=..\out\installer
+#endif
 OutputBaseFilename=Y-Apex-Setup
 SetupIconFile=..\assets\icons\generated\app.ico
 UninstallDisplayIcon={app}\ui\YApex.UI.exe
@@ -48,7 +52,11 @@ Name: "{autodesktop}\Y-Apex"; Filename: "{app}\ui\YApex.UI.exe"; WorkingDir: "{a
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 
 [Run]
+#ifdef YAPEX_HEADLESS_INSTALLER_SMOKE_TEST
+; The smoke test registers its CI client SID after service installation; no Explorer session exists here.
+#else
 Filename: "{app}\cli\YApex.Cli.exe"; Parameters: "register-pipe-user --interactive"; StatusMsg: "Registering the signed-in desktop account for the local service pipe..."; Flags: runhidden waituntilterminated runascurrentuser
+#endif
 Filename: "{app}\service\YApex.Service.exe"; Parameters: "--install-service"; StatusMsg: "Installing and starting the Y-Apex service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\ui\YApex.UI.exe"; Description: "Launch Y-Apex"; WorkingDir: "{app}\ui"; Flags: postinstall nowait skipifsilent runasoriginaluser
 

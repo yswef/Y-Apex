@@ -189,7 +189,7 @@
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                             <Button x:Name="PreviousPageButton" Content="{DynamicResource PreviousPage}" Click="PreviousPage_Click" IsEnabled="False" />
                             <Button x:Name="NextPageButton" Content="{DynamicResource NextPage}" Click="NextPage_Click" IsEnabled="False" />
-                            <Button x:Name="AllowButton" Content="{DynamicResource Allow}" Background="{DynamicResource AccentColor}" Foreground="White" Click="Allow_Click" IsEnabled="False" />
+                            <Button x:Name="AllowButton" Content="{DynamicResource AllowOutbound}" Background="{DynamicResource AccentColor}" Foreground="White" Click="Allow_Click" IsEnabled="False" />
                             <Button x:Name="BlockButton" Content="{DynamicResource Block}" Background="{DynamicResource DangerColor}" Foreground="White" Click="Block_Click" IsEnabled="False" />
                         </StackPanel>
                     </DockPanel>

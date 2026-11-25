@@ -1,36 +1,332 @@
-<!DOCTYPE html>
-<!-- © ENG.YSWEF — 170477919+yswef@users.noreply.github.com -->
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Y-Apex</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="دليل Y-Apex: مراقب اتصالات Windows ومدير قواعد جدار الحماية. الحالة والميزات والقيود والأمان ودليل الاستخدام ومقارنة موثقة مع Portmaster وGlassWire.">
+  <meta property="og:title" content="Y-Apex — الوثائق">
+  <meta property="og:description" content="وثائق شفافة لمشروع Windows في مرحلة التطوير، مع مقارنة موثقة وشرح للقيود الحالية.">
+  <title>Y-Apex — الوثائق</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
 </head>
 <body>
-<header>
-  <b>Y-Apex</b>
-  <span class="lang"><button data-l="ar">العربية</button><button data-l="en">English</button></span>
-</header>
-<main>
-  <section class="hero">
-    <h1 data-i="tagline"></h1>
-    <p data-i="status"></p>
-  </section>
-  <section>
-    <h2 data-i="f_title"></h2>
-    <ul><li data-i="f1"></li><li data-i="f2"></li><li data-i="f3"></li><li data-i="f4"></li></ul>
-  </section>
-  <section>
-    <h2 data-i="d_title"></h2>
-    <ul id="links"></ul>
-  </section>
-  <section>
-    <h2 data-i="s_title"></h2>
-    <ul id="wallets"></ul>
-  </section>
-</main>
-<footer>© ENG.YSWEF</footer>
-<script src="app.js"></script>
+  <a class="skip-link" id="skip-link" href="#ar-overview">تخطي إلى المحتوى</a>
+  <header class="topbar">
+    <a class="brand" href="#ar-overview" aria-label="Y-Apex — الصفحة الرئيسية">
+      <span class="brand-mark" aria-hidden="true">Y</span>
+      <span>Y-Apex</span>
+    </a>
+    <div class="top-actions">
+      <button class="language-toggle" id="language-toggle" type="button" aria-label="Switch language to English">English</button>
+      <a class="button button-small button-outline" data-shared-link="repo" href="https://github.com/yswef/Y-Apex" target="_blank" rel="noopener noreferrer">المستودع ↗</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="locale-content" data-locale-content="ar" lang="ar" dir="rtl">
+      <nav class="toc" aria-label="التنقل في الوثائق">
+        <a href="#ar-overview">نظرة عامة</a><a href="#ar-features">الميزات</a><a href="#ar-guide">الاستخدام</a><a href="#ar-security">الأمان والخصوصية</a><a href="#ar-comparison">المقارنة</a><a href="#ar-faq">الأسئلة الشائعة</a>
+      </nav>
+
+      <section class="hero" id="ar-overview" aria-labelledby="ar-title" tabindex="-1">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> مراقب اتصالات Windows محلي</p>
+          <h1 id="ar-title">اعرف ما يتصل.<br><span class="accent-text">تحكّم بحذر.</span></h1>
+          <p class="hero-lede">Y-Apex مشروع مفتوح المصدر يهدف إلى عرض اتصالات البرامج وإدارة قواعد Windows Firewall بمعاينة وتأكيد وتراجع.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#ar-features">استكشف الوثائق <span aria-hidden="true">↓</span></a>
+            <a class="button button-outline" data-shared-link="repo" href="https://github.com/yswef/Y-Apex" target="_blank" rel="noopener noreferrer">اقرأ الشيفرة <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="hero-note">Windows x64 · رخصة MIT · لا إصدار عام حتى الآن</p>
+        </div>
+        <div class="hero-visual" role="img" aria-label="رسم توضيحي محلي للاتصالات وقواعد الجدار">
+          <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+          <div class="visual-core"><span class="core-glyph">Y</span><span>تحكم<br>محلي</span></div>
+          <span class="orbit-node node-one">TCP</span><span class="orbit-node node-two">UDP</span><span class="orbit-node node-three">قواعد</span>
+          <span class="visual-caption">لا خروج تلقائياً</span>
+        </div>
+      </section>
+
+      <section class="notice notice-critical" aria-labelledby="ar-status-title">
+        <div class="notice-icon" aria-hidden="true">!</div>
+        <div>
+          <h2 id="ar-status-title">حالة الإصدار: تطوير غير منشور</h2>
+          <p>لا يوجد مثبّت عام، ولم يُختبر التثبيت وسلوك الحجب يدوياً داخل Windows VM تفاعلي. لا تثبّت هذا البناء على جهازك الأساسي. تغييرات الجدار تُجرّب فقط داخل جهاز وهمي بلقطة استعادة.</p>
+        </div>
+        <a class="text-link" data-shared-link="releases" href="https://github.com/yswef/Y-Apex/releases" target="_blank" rel="noopener noreferrer">صفحة الإصدارات ↗</a>
+      </section>
+
+      <section class="section" id="ar-features" aria-labelledby="ar-features-title">
+        <div class="section-heading"><p class="eyebrow">ما تنفذه الشيفرة الحالية</p><h2 id="ar-features-title">ميزات النطاق الحالي</h2><p>هذه أوصاف للتنفيذ في المستودع، وليست ادعاءً بأن المنتج اجتاز اختباراً ميدانياً على Windows.</p></div>
+        <div class="card-grid four-grid">
+          <article class="feature-card"><span class="card-index">01</span><h3>لقطات اتصالات</h3><p>قراءة جداول TCP وUDP المحلية وربطها بالعملية عند سماح Windows. تتجدد الواجهة دورياً، وتظهر مطالبة عند أول اتصال مرصود لبرنامج جديد؛ لا يوجد سجل تاريخي لحركة الاتصالات.</p><span class="tag">IP Helper</span></article>
+          <article class="feature-card"><span class="card-index">02</span><h3>تغيير قواعد بمراجعة</h3><p>معاينة اتجاه وإجراء كل قاعدة قبل التأكيد. الحجب يضيف قواعد واردة وصادرة؛ السماح يضيف قاعدة صادرة فقط.</p><span class="tag">30 ثانية للتراجع</span></article>
+          <article class="feature-card"><span class="card-index">03</span><h3>سجل واستهلاك محلي</h3><p>سجل تغييرات قواعد Y-Apex محفوظ محلياً. عدادات ETW تحسب البايتات منذ بدء الخدمة وتُمسح عند إعادة تشغيلها.</p><span class="tag">لا تاريخ دائم للاستهلاك</span></article>
+          <article class="feature-card"><span class="card-index">04</span><h3>تصدير وتحكم</h3><p>تصدير عرض الاتصالات الحالي إلى JSON أو CSV، وتصدير أحدث أحداث سجل القواعد. لا تُرسل الملفات تلقائياً.</p><span class="tag">بعد موافقة المستخدم</span></article>
+        </div>
+      </section>
+
+      <section class="section split-section" id="ar-guide" aria-labelledby="ar-guide-title">
+        <div class="section-heading"><p class="eyebrow">دليل سريع</p><h2 id="ar-guide-title">كيف تستخدمه بأمان؟</h2><p>لا تجرّب قواعد الحجب على جهاز يومي. الواجهة لا تطبّق أي تغيير عند مجرد فتحها أو قراءة الاتصالات.</p></div>
+        <ol class="step-list">
+          <li><span class="step-number">1</span><div><h3>ابدأ داخل جهاز وهمي</h3><p>أنشئ لقطة استعادة، واستخدم ملف اختبار تملكه. راجع <a href="https://github.com/yswef/Y-Apex/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">خطة الاختبار</a>.</p></div></li>
+          <li><span class="step-number">2</span><div><h3>راجع العملية والمسار</h3><p>تعرض القائمة اسم البرنامج ومساره وبعض بيانات الهوية. بصمة الملف والتوقيع قرائن فقط؛ قاعدة Windows Firewall تُطابق المسار ولا تُثبّت هوية الناشر.</p></div></li>
+          <li><span class="step-number">3</span><div><h3>اختر الإجراء ثم اقرأ المعاينة</h3><p><strong>حجب</strong> يضع قواعد واردة وصادرة. <strong>السماح بالصادر</strong> لا يفتح منفذاً وارداً، ويترك إعدادات Windows Firewall الافتراضية قائمة.</p></div></li>
+          <li><span class="step-number">4</span><div><h3>اختبر الاتصال أو تراجع</h3><p>بعد التطبيق اختبر البرنامج. أكد أن الاتصال يعمل للاحتفاظ بالتغيير، أو استخدم «تراجع». إن لم تؤكد خلال 30 ثانية، يحاول التطبيق استعادة الحالة السابقة.</p></div></li>
+          <li><span class="step-number">5</span><div><h3>استخدم الطوارئ عند الحاجة</h3><p>أمر الطوارئ يعرض معاينة ويحذف قواعد Y-Apex ذات علامة الملكية فقط بعد تأكيد صريح. لا يحذف قواعد Windows أو التطبيقات الأخرى.</p></div></li>
+        </ol>
+      </section>
+
+      <section class="section" id="ar-architecture" aria-labelledby="ar-architecture-title">
+        <div class="section-heading"><p class="eyebrow">التصميم</p><h2 id="ar-architecture-title">مكوّنات التطبيق</h2></div>
+        <div class="architecture-grid">
+          <article><span class="arch-label">01 / واجهة</span><h3>WPF بصلاحيات المستخدم</h3><p>عرض الاتصالات والقواعد والاستهلاك والسجل. الواجهة لا تملك صلاحية تغيير الجدار بنفسها.</p></article>
+          <article><span class="arch-label">02 / خدمة</span><h3>خدمة Windows محلية</h3><p>تستخدم Windows Firewall COM وواجهات IP Helper وETW. تعمل بصلاحية مرتفعة، لذا تبقى واجهتها محدودة ومقيدة.</p></article>
+          <article><span class="arch-label">03 / قناة</span><h3>Named Pipe مقيدة</h3><p>رسائل محددة الإصدار والحجم، تحقق صارم من الحقول، ACL للمستخدم المسجل والمسؤولين وSYSTEM، وحدود للطلبات.</p></article>
+          <article><span class="arch-label">04 / تحديث</span><h3>لا مصدر تحديث شبكي</h3><p>فاحص التحديث الحالي محلي فقط. لا توجد خدمة telemetry أو تنزيل قوائم أو updater تلقائي في الشيفرة الحالية.</p></article>
+        </div>
+      </section>
+
+      <section class="section section-warn" id="ar-limitations" aria-labelledby="ar-limitations-title">
+        <div class="section-heading"><p class="eyebrow">اقرأ قبل الاستخدام</p><h2 id="ar-limitations-title">ما الذي لا يفعله Y-Apex؟</h2><p>وجود عنصر في الواجهة أو مشروع في الحل لا يعني أن القدرة منفّذة أو متحققة.</p></div>
+        <ul class="limit-list">
+          <li><strong>لا يوجد موفر WFP فعّال.</strong> طبقة WFP تجريبية غير منفذة؛ التنفيذ الحالي لإدارة القواعد هو Windows Firewall.</li>
+          <li><strong>لا يوجد strict mode.</strong> ليس هناك حظر افتراضي شامل أو قائمة سماح تشغيلية.</li>
+          <li><strong>لا يوجد DNS مشفّر أو حجب نطاقات ومتعقبات.</strong> لا توجد قوائم تهديدات أو مكافحة برمجيات خبيثة.</li>
+          <li><strong>لا يوجد تاريخ دائم لاتصالات الشبكة أو الاستهلاك.</strong> عدادات ETW موجودة في الذاكرة، وتبدأ من جديد مع الخدمة.</li>
+          <li><strong>الاتجاه غير موثوق في مصدر الاتصالات.</strong> تعرض واجهة IP Helper الاتجاه «غير معروف»، وUDP يعرض نقاط الربط المحلية فقط.</li>
+          <li><strong>التوقيع لا يربط القاعدة بالناشر.</strong> Windows Firewall يعتمد على مسار الملف؛ قد يتغير الملف بعد التحقق.</li>
+          <li><strong>لم يكتمل اختبار VM التفاعلي.</strong> بناء CI واختبارات الوحدات لا يثبتان سلامة التثبيت أو فاعلية الجدار.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="ar-security" aria-labelledby="ar-security-title">
+        <div class="section-heading"><p class="eyebrow">البيانات والثقة</p><h2 id="ar-security-title">الأمان والخصوصية</h2><p>البرنامج يتعامل مع بيانات حساسة ومع قواعد جدار الحماية؛ إليك ما يحدث وما لا يحدث.</p></div>
+        <div class="card-grid three-grid">
+          <article class="info-card"><h3>المعلومات محلية</h3><p>أسماء العمليات ومساراتها وعناوين IP وحجوم النقل لا تُرسل إلى خادم بواسطة الشيفرة الحالية. سجل القواعد في ProgramData محمي بـACL وDPAPI بنطاق الجهاز؛ قد يستطيع المسؤول المحلي قراءته أو تغييره.</p></article>
+          <article class="info-card"><h3>التصدير يكشف بيانات</h3><p>ملفات JSON/CSV قد تحتوي أسماء العمليات والمسارات وعناوين IP والمنافذ والتوقيتات. اختر موقعاً آمناً ولا تشاركها إلا عند الحاجة.</p></article>
+          <article class="info-card"><h3>المسؤول المحلي خارج الحماية</h3><p>Y-Apex لا يحمي جهازاً من مسؤول Windows مخترق، ولا يحل محل مضاد الفيروسات أو Windows Defender Firewall أو VPN.</p></article>
+        </div>
+        <p class="inline-links"><a href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">إشعار الخصوصية الكامل ↗</a><a href="https://github.com/yswef/Y-Apex/blob/main/docs/threat-model.md" target="_blank" rel="noopener noreferrer">نموذج التهديدات ↗</a><a data-shared-link="license" href="https://github.com/yswef/Y-Apex/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">رخصة MIT ↗</a></p>
+      </section>
+
+      <section class="section comparison-section" id="ar-comparison" aria-labelledby="ar-comparison-title">
+        <div class="section-heading"><p class="eyebrow">مقارنة محايدة</p><h2 id="ar-comparison-title">Y-Apex مقابل Portmaster وGlassWire</h2><p>مقارنة للميزات المعلنة في المصادر الرسمية مع التنفيذ الحالي في الشيفرة، وليست اختبار أداء أو مراجعة أمنية مستقلة.</p></div>
+        <div class="comparison-callout"><strong>الخلاصة:</strong> Y-Apex ما زال نموذجاً تطويرياً محدوداً وغير منشور. Portmaster يقدم وظائف خصوصية وتصفية أوسع؛ GlassWire يركز على الرسوم التاريخية والتنبيهات وإدارة الجدار. لا تتساوى المنتجات في النضج أو النطاق.</div>
+        <div class="table-wrap" role="region" aria-label="جدول مقارنة المنتجات" tabindex="0">
+          <table class="comparison-table">
+            <caption>المزايا حسب الوثائق الرسمية والتنفيذ في الشيفرة — مراجعة 22 نوفمبر 2026</caption>
+            <thead><tr><th scope="col">المجال</th><th scope="col">Y-Apex</th><th scope="col">Portmaster</th><th scope="col">GlassWire</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">الحالة والمنصة</th><td>تطوير غير منشور؛ Windows x64 فقط، ولم يُتحقق من المثبّت في VM تفاعلي.</td><td>منتج منشور مفتوح المصدر لـWindows وLinux.</td><td>منتج منشور لـWindows وتطبيق منفصل لـAndroid.</td></tr>
+              <tr><th scope="row">رؤية الاتصالات</th><td>لقطات TCP/UDP حسب العملية؛ لا تاريخ حركة دائم، والاتجاه غير معروف.</td><td>مراقبة اتصالات لكل تطبيق وتحقيق تفصيلي بحسب خطة الاشتراك.</td><td>رسوم للحركة الحالية والسابقة، سجل زمني وتحليلات للمضيف/التطبيق.</td></tr>
+              <tr><th scope="row">إدارة الجدار</th><td>قواعد Windows Firewall: الحجب وارد وصادر؛ السماح صادر فقط؛ معاينة وتأكيد وتراجع في الشيفرة.</td><td>قواعد عامة ولكل تطبيق ومرشحات للاتصالات؛ تكامل WFP على Windows.</td><td>إدارة Windows Firewall المدمج؛ قواعد واردة وصادرة وأوضاع Ask to Connect وLock Down وملفات تعريف.</td></tr>
+              <tr><th scope="row">DNS والتصفية</th><td>غير موجودة: لا DNS آمن ولا قوائم نطاقات/متعقبات.</td><td>DNS مشفر DoT/DoH وقوائم لحجب المتعقبات والبرمجيات الخبيثة حسب وثائق البائع.</td><td>تنبيهات DNS ومضيفات مشبوهة؛ لم نعثر في وثائق المنتج على محلل DNS مشفر نظامي.</td></tr>
+              <tr><th scope="row">التاريخ والاستهلاك</th><td>عداد ETW مؤقت في الذاكرة؛ لا سجل تاريخي للشبكة.</td><td>Network History ورؤية النطاق الترددي من مزايا التحقيق المدفوعة.</td><td>تاريخ رسوم 24 ساعة في المجاني وتاريخ/نطاق ترددي غير محدود في Premium حسب صفحة الأسعار.</td></tr>
+              <tr><th scope="row">أدوات إضافية</th><td>لا ماسح شبكة أو مراقبة عن بعد أو تنبيهات Wi-Fi حالياً.</td><td>مرشحات خصوصية وقواعد تطبيق، وSPN اختيارية مدفوعة.</td><td>ماسح أجهزة الشبكة ومراقبة عن بعد وتنبيهات أمنية ومراقبة موارد العتاد وفق الخطة.</td></tr>
+              <tr><th scope="row">المصدر والرخصة</th><td>الشيفرة منشورة برخصة MIT؛ WFP غير منفذ.</td><td>المستودع الرسمي GPL-3.0 ومفتوح المصدر.</td><td>شروط ترخيص تجارية وحقوق الشيفرة محفوظة في الرخصة الرسمية.</td></tr>
+              <tr><th scope="row">السعر المعلن</th><td>لا إصدار عام أو سعر منشور.</td><td>Free؛ Plus ‏€40 سنوياً؛ Pro ‏€8 شهرياً أو €80 سنوياً.</td><td>خطة مجانية؛ Personal Premium ‏$2.99 شهرياً مع فوترة سنوية لكل ترخيص، قبل العروض.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="method-note">الأسعار والمزايا قد تختلف حسب البلد والخطة والعروض وتتغير بمرور الوقت. المصادر المذكورة أدناه هي صفحات البائعين الرسمية؛ لا تمثل هذه الصفحة اختباراً مستقلاً.</p>
+        <div class="sources-grid">
+          <div><h3>مصادر Portmaster</h3><ul><li><a href="https://safing.io/features/" target="_blank" rel="noopener noreferrer">الميزات ↗</a></li><li><a href="https://safing.io/pricing/" target="_blank" rel="noopener noreferrer">الأسعار والخطط ↗</a></li><li><a href="https://github.com/safing/portmaster" target="_blank" rel="noopener noreferrer">المصدر والرخصة ↗</a></li><li><a href="https://safing.io/business-model/" target="_blank" rel="noopener noreferrer">نموذج العمل ↗</a></li></ul></div>
+          <div><h3>مصادر GlassWire</h3><ul><li><a href="https://www.glasswire.com/features/" target="_blank" rel="noopener noreferrer">الميزات ↗</a></li><li><a href="https://www.glasswire.com/userguide/" target="_blank" rel="noopener noreferrer">دليل Windows ↗</a></li><li><a href="https://www.glasswire.com/pricing/" target="_blank" rel="noopener noreferrer">الأسعار ↗</a></li><li><a href="https://www.glasswire.com/privacy/" target="_blank" rel="noopener noreferrer">الخصوصية ↗</a></li><li><a href="https://www.glasswire.com/license/" target="_blank" rel="noopener noreferrer">شروط الترخيص ↗</a></li><li><a href="https://www.glasswire.com/changes/" target="_blank" rel="noopener noreferrer">سجل الإصدارات ↗</a></li></ul></div>
+        </div>
+      </section>
+
+      <section class="section" id="ar-install" aria-labelledby="ar-install-title">
+        <div class="section-heading"><p class="eyebrow">البناء والتثبيت</p><h2 id="ar-install-title">كيف أحصل على Y-Apex؟</h2></div>
+        <div class="install-status"><span class="status-pill">لا يوجد تنزيل عام</span><p>لن تجد رابط تثبيت عام بعد. ملفات CI المؤقتة مخصصة للاختبار وليست إصدارات موقعة أو موصى بها للتثبيت.</p></div>
+        <h3>بناء الشيفرة للمطورين</h3>
+        <p>يتطلب الحل Windows x64 و.NET 10 SDK؛ استعادة حزم NuGet أثناء البناء تحتاج اتصالاً بالإنترنت. لا يحتاج التطبيق نفسه إلى اتصال شبكي تلقائي.</p>
+        <pre><code>dotnet restore YApex.sln
+dotnet build YApex.sln -c Release --no-restore
+dotnet test YApex.sln -c Release --no-build</code></pre>
+        <p>راجع <a href="https://github.com/yswef/Y-Apex/blob/main/docs/build-local.md" target="_blank" rel="noopener noreferrer">دليل البناء المحلي</a> و<a href="https://github.com/yswef/Y-Apex/blob/main/docs/release.md" target="_blank" rel="noopener noreferrer">بوابة الإصدار</a>. لا تختبر الحجب إلا في VM بلقطة استعادة.</p>
+      </section>
+
+      <section class="section faq-section" id="ar-faq" aria-labelledby="ar-faq-title">
+        <div class="section-heading"><p class="eyebrow">الإجابات الواضحة</p><h2 id="ar-faq-title">أسئلة شائعة</h2></div>
+        <details><summary>هل يحجب Y-Apex الاتصالات تلقائياً؟</summary><p>لا. عرض الاتصالات لا يغير الجدار. تطبيق القاعدة يتطلب معاينة وتأكيداً صريحاً. التغيير غير المؤكد يدخل نافذة تراجع مدتها 30 ثانية.</p></details>
+        <details><summary>هل خيار السماح يفتح الاتصالات الواردة؟</summary><p>لا. الإصدار الحالي يضيف قاعدة سماح صادرة فقط. الحجب ينشئ قاعدتي حجب واردة وصادرة، وإعدادات Windows Firewall الأخرى تظل سارية.</p></details>
+        <details><summary>هل Y-Apex منافس جاهز لـPortmaster أو GlassWire؟</summary><p>ليس بعد. إنه مشروع تطوير غير منشور بلا اختبار تثبيت/حجب تفاعلي مكتمل في Windows VM، ويفتقر إلى DNS الآمن وحجب النطاقات والتاريخ الطويل.</p></details>
+        <details><summary>هل يوجد WFP أو وضع صارم؟</summary><p>لا. طبقة WFP التجريبية غير منفذة، وخيار strict mode غير متاح. إدارة القواعد الحالية تمر عبر Windows Firewall.</p></details>
+        <details><summary>ما البيانات التي تُرسل إلى الإنترنت؟</summary><p>لا توجد في الشيفرة الحالية قناة telemetry أو updater أو مصدر تحديثات شبكة. استعادة الحزم للمطورين أثناء البناء أمر منفصل. راجع <a href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">إشعار الخصوصية</a>.</p></details>
+        <details><summary>هل سجل الاستهلاك يبقى بعد إعادة التشغيل؟</summary><p>لا. عدادات ETW في ذاكرة الخدمة منذ بدء التشغيل، وتُصفّر عند توقفها. سجل قواعد Y-Apex منفصل عن سجل حركة الشبكة.</p></details>
+        <details><summary>كيف أحذف قواعد البرنامج عند إزالته؟</summary><p>الإزالة التفاعلية تسأل قبل حذف قواعد Y-Apex والبيانات المشتركة. اختيار «لا» أو الإزالة الصامتة يترك القواعد والبيانات. راجع تعليمات التنظيف في <a href="https://github.com/yswef/Y-Apex/blob/main/docs/release.md" target="_blank" rel="noopener noreferrer">وثائق الإصدار</a> قبل إزالة أي برنامج.</p></details>
+      </section>
+
+      <section class="section final-links" id="ar-docs" aria-labelledby="ar-docs-title">
+        <div><p class="eyebrow">اقرأ أكثر</p><h2 id="ar-docs-title">وثائق المشروع</h2></div>
+        <div class="link-grid">
+          <a href="https://github.com/yswef/Y-Apex/blob/main/README.md" target="_blank" rel="noopener noreferrer">README بالعربية <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/architecture.md" target="_blank" rel="noopener noreferrer">المعمارية <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/threat-model.md" target="_blank" rel="noopener noreferrer">نموذج التهديدات <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">الاختبارات <span>↗</span></a>
+          <a data-shared-link="comparison" href="https://github.com/yswef/Y-Apex/blob/main/docs/comparison.md" target="_blank" rel="noopener noreferrer">المقارنة التفصيلية <span>↗</span></a>
+          <a data-shared-link="privacy" href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">إشعار الخصوصية <span>↗</span></a>
+          <a data-shared-link="changelog" href="https://github.com/yswef/Y-Apex/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">سجل التغييرات <span>↗</span></a>
+          <a data-shared-link="issues" href="https://github.com/yswef/Y-Apex/issues" target="_blank" rel="noopener noreferrer">الإبلاغ عن مشكلة <span>↗</span></a>
+        </div>
+      </section>
+      <footer class="site-footer"><span>Y-Apex · مشروع مفتوح المصدر برخصة MIT</span><span>الوثائق لا تعني وجود إصدار موصى به للتثبيت.</span><a data-shared-link="repo" href="https://github.com/yswef/Y-Apex" target="_blank" rel="noopener noreferrer">المستودع ↗</a></footer>
+    </div>
+
+    <div class="locale-content" data-locale-content="en" lang="en" dir="ltr" hidden>
+      <nav class="toc" aria-label="Documentation navigation">
+        <a href="#en-overview">Overview</a><a href="#en-features">Features</a><a href="#en-guide">Using Y-Apex</a><a href="#en-security">Security & privacy</a><a href="#en-comparison">Comparison</a><a href="#en-faq">FAQ</a>
+      </nav>
+
+      <section class="hero" id="en-overview" aria-labelledby="en-title" tabindex="-1">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Local Windows connection monitor</p>
+          <h1 id="en-title">See what connects.<br><span class="accent-text">Act with care.</span></h1>
+          <p class="hero-lede">Y-Apex is an open-source project for viewing app connections and managing Windows Firewall rules with a preview, confirmation, and rollback.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#en-features">Explore the docs <span aria-hidden="true">↓</span></a>
+            <a class="button button-outline" data-shared-link="repo" href="https://github.com/yswef/Y-Apex" target="_blank" rel="noopener noreferrer">Read the source <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="hero-note">Windows x64 · MIT license · No public release yet</p>
+        </div>
+        <div class="hero-visual" role="img" aria-label="Illustration of local connections and firewall rules">
+          <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+          <div class="visual-core"><span class="core-glyph">Y</span><span>LOCAL<br>CONTROL</span></div>
+          <span class="orbit-node node-one">TCP</span><span class="orbit-node node-two">UDP</span><span class="orbit-node node-three">FW</span>
+          <span class="visual-caption">No automatic outbound requests</span>
+        </div>
+      </section>
+
+      <section class="notice notice-critical" aria-labelledby="en-status-title">
+        <div class="notice-icon" aria-hidden="true">!</div>
+        <div>
+          <h2 id="en-status-title">Release status: unreleased development build</h2>
+          <p>There is no public installer. Installation and firewall behavior have not yet been manually exercised in an interactive Windows VM. Do not install this build on a primary machine. Test firewall changes only in a VM with a restore snapshot.</p>
+        </div>
+        <a class="text-link" data-shared-link="releases" href="https://github.com/yswef/Y-Apex/releases" target="_blank" rel="noopener noreferrer">Releases ↗</a>
+      </section>
+
+      <section class="section" id="en-features" aria-labelledby="en-features-title">
+        <div class="section-heading"><p class="eyebrow">What the current source implements</p><h2 id="en-features-title">Current scope</h2><p>These describe repository code, not a claim that the product has passed end-user testing on Windows.</p></div>
+        <div class="card-grid four-grid">
+          <article class="feature-card"><span class="card-index">01</span><h3>Connection snapshots</h3><p>Reads local TCP and UDP tables and associates entries with processes where Windows permits. The UI refreshes periodically and prompts when it observes a new program's first connection; this is not durable connection history.</p><span class="tag">IP Helper</span></article>
+          <article class="feature-card"><span class="card-index">02</span><h3>Reviewed rule changes</h3><p>Preview each rule's direction and action before confirmation. Block adds inbound and outbound rules; Allow adds an outbound rule only.</p><span class="tag">30-second rollback</span></article>
+          <article class="feature-card"><span class="card-index">03</span><h3>Local journal and usage</h3><p>Y-Apex rule changes are journaled locally. ETW counters count bytes from service start and reset when the service restarts.</p><span class="tag">No persistent usage history</span></article>
+          <article class="feature-card"><span class="card-index">04</span><h3>Export and control</h3><p>Export the current connection view to JSON or CSV and recent rule-journal events. Files are not sent automatically.</p><span class="tag">User initiated</span></article>
+        </div>
+      </section>
+
+      <section class="section split-section" id="en-guide" aria-labelledby="en-guide-title">
+        <div class="section-heading"><p class="eyebrow">Quick guide</p><h2 id="en-guide-title">How to use it safely</h2><p>Do not test firewall rules on your everyday machine. Merely opening the app or reading connections does not change the firewall.</p></div>
+        <ol class="step-list">
+          <li><span class="step-number">1</span><div><h3>Start in a virtual machine</h3><p>Create a restore snapshot and use a test executable you own. See the <a href="https://github.com/yswef/Y-Apex/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">test plan</a>.</p></div></li>
+          <li><span class="step-number">2</span><div><h3>Check the process and path</h3><p>The list shows the app name and path plus some identity information. Hash and signature are clues only: Windows Firewall matches the path, not a cryptographically pinned publisher.</p></div></li>
+          <li><span class="step-number">3</span><div><h3>Choose an action and read the preview</h3><p><strong>Block</strong> adds inbound and outbound block rules. <strong>Allow outbound</strong> does not open inbound access; existing Windows Firewall defaults remain in force.</p></div></li>
+          <li><span class="step-number">4</span><div><h3>Test connectivity or undo</h3><p>After applying a change, test the app. Confirm that connectivity works to keep the change, or use Undo. If you do not confirm within 30 seconds, the app attempts to restore the previous state.</p></div></li>
+          <li><span class="step-number">5</span><div><h3>Use emergency removal if needed</h3><p>The emergency flow previews and removes only rules with Y-Apex ownership metadata after explicit confirmation. It does not request deletion of Windows or other apps' rules.</p></div></li>
+        </ol>
+      </section>
+
+      <section class="section" id="en-architecture" aria-labelledby="en-architecture-title">
+        <div class="section-heading"><p class="eyebrow">Design</p><h2 id="en-architecture-title">Application components</h2></div>
+        <div class="architecture-grid">
+          <article><span class="arch-label">01 / UI</span><h3>Unprivileged WPF client</h3><p>Shows connections, rules, usage, and journal. The UI itself does not have permission to change the firewall.</p></article>
+          <article><span class="arch-label">02 / Service</span><h3>Local Windows service</h3><p>Uses Windows Firewall COM, IP Helper, and ETW. It runs with elevated privileges, so its command surface is deliberately limited.</p></article>
+          <article><span class="arch-label">03 / IPC</span><h3>Restricted named pipe</h3><p>Versioned, size-limited messages, strict field validation, an ACL for the enrolled user, Administrators and SYSTEM, and request limits.</p></article>
+          <article><span class="arch-label">04 / Updates</span><h3>No network update source</h3><p>The current update check is local only. The source contains no telemetry service, list downloader, or automatic updater.</p></article>
+        </div>
+      </section>
+
+      <section class="section section-warn" id="en-limitations" aria-labelledby="en-limitations-title">
+        <div class="section-heading"><p class="eyebrow">Read before use</p><h2 id="en-limitations-title">What Y-Apex does not do</h2><p>A UI element or project in the solution does not mean the capability is implemented or validated.</p></div>
+        <ul class="limit-list">
+          <li><strong>No active WFP provider.</strong> The experimental WFP layer is unimplemented; current rule management uses Windows Firewall.</li>
+          <li><strong>No strict mode.</strong> There is no operational default-deny mode or allow-list.</li>
+          <li><strong>No encrypted DNS, domain filtering, or tracker lists.</strong> No threat-intelligence feed or malware scanner is included.</li>
+          <li><strong>No persistent network or usage history.</strong> ETW counters are held in memory and reset with the service.</li>
+          <li><strong>Connection direction is not reliable.</strong> The IP Helper source reports direction as unknown; UDP rows show local sockets only.</li>
+          <li><strong>A signature does not bind the rule to a publisher.</strong> Windows Firewall uses the executable path; a file can change after verification.</li>
+          <li><strong>Interactive VM validation is outstanding.</strong> CI builds and unit tests do not prove installer safety or firewall enforcement.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="en-security" aria-labelledby="en-security-title">
+        <div class="section-heading"><p class="eyebrow">Data and trust</p><h2 id="en-security-title">Security and privacy</h2><p>The app handles sensitive metadata and firewall rules. Here is what it does and does not do.</p></div>
+        <div class="card-grid three-grid">
+          <article class="info-card"><h3>Data stays local</h3><p>The current source does not send process names, paths, IP addresses, or usage counters to a server. The ProgramData rule journal is ACL-restricted and protected with machine-scope DPAPI; a local administrator can still read or alter it.</p></article>
+          <article class="info-card"><h3>Exports are sensitive</h3><p>JSON/CSV files may contain process names, paths, IP addresses, ports, and timestamps. Choose a safe destination and share only when needed.</p></article>
+          <article class="info-card"><h3>Local administrators are out of scope</h3><p>Y-Apex cannot protect a machine from a compromised Windows administrator, and it is not a replacement for antivirus, Windows Defender Firewall, or a VPN.</p></article>
+        </div>
+        <p class="inline-links"><a href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">Full privacy notice ↗</a><a href="https://github.com/yswef/Y-Apex/blob/main/docs/threat-model.md" target="_blank" rel="noopener noreferrer">Threat model ↗</a><a data-shared-link="license" href="https://github.com/yswef/Y-Apex/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT license ↗</a></p>
+      </section>
+
+      <section class="section comparison-section" id="en-comparison" aria-labelledby="en-comparison-title">
+        <div class="section-heading"><p class="eyebrow">Neutral comparison</p><h2 id="en-comparison-title">Y-Apex vs Portmaster vs GlassWire</h2><p>Vendor-published features are compared with the current source implementation; this is not a performance test or independent security review.</p></div>
+        <div class="comparison-callout"><strong>Summary:</strong> Y-Apex remains a narrow, unreleased development prototype. Portmaster offers broader privacy filtering and DNS features; GlassWire focuses on historical visualizations, alerts, and firewall management. Their maturity and scope are not equivalent.</div>
+        <div class="table-wrap" role="region" aria-label="Product comparison table" tabindex="0">
+          <table class="comparison-table">
+            <caption>Capabilities from official documentation and current source — reviewed November 22, 2026</caption>
+            <thead><tr><th scope="col">Dimension</th><th scope="col">Y-Apex</th><th scope="col">Portmaster</th><th scope="col">GlassWire</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Status and platforms</th><td>Unreleased development build; Windows x64 only; interactive VM installation has not been validated.</td><td>Published open-source product for Windows and Linux.</td><td>Published Windows product and separate Android app.</td></tr>
+              <tr><th scope="row">Connection visibility</th><td>TCP/UDP snapshots by process; no durable traffic history; direction is unknown.</td><td>Vendor documents real-time per-app monitoring and investigation features.</td><td>Current and historical traffic graphs, timeline, host/app breakdowns.</td></tr>
+              <tr><th scope="row">Firewall control</th><td>Windows Firewall rules: block is inbound and outbound; allow is outbound only; preview, confirmation, and rollback are in source.</td><td>Global and per-app rules and connection filtering; Windows integration uses WFP.</td><td>Manages Windows Firewall; separate inbound/outbound controls, Ask to Connect, Lock Down, and profiles are in the Windows guide.</td></tr>
+              <tr><th scope="row">DNS and filtering</th><td>Not included: no secure DNS or domain/tracker lists.</td><td>Vendor advertises DoT/DoH and system-wide tracker/malware lists.</td><td>DNS and suspicious-host alerts are documented; no system-wide encrypted DNS resolver was found in reviewed product pages.</td></tr>
+              <tr><th scope="row">History and usage</th><td>Temporary in-memory ETW counters; no connection history.</td><td>Network History and per-app bandwidth visibility are paid investigative features.</td><td>24-hour history/bandwidth on Free and unlimited history/bandwidth on Premium in the official pricing table.</td></tr>
+              <tr><th scope="row">Additional tools</th><td>No LAN scanner, remote monitoring, or Wi-Fi alerts in the current source.</td><td>Privacy filters and app rules, plus optional paid SPN.</td><td>Network device scanner, remote monitoring, security alerts, and hardware monitoring, depending on plan.</td></tr>
+              <tr><th scope="row">Source and license</th><td>MIT-licensed source; WFP provider is not implemented.</td><td>Official repository is public under GPL-3.0.</td><td>Commercial license terms; official license reserves source-code rights.</td></tr>
+              <tr><th scope="row">Published price snapshot</th><td>No public release or price.</td><td>Free; Plus €40/year; Pro €8/month or €80/year.</td><td>Free plan; Personal Premium $2.99/month, billed annually per license, before promotions.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="method-note">Prices and features can vary by region, plan, and promotion and can change over time. The links below are vendor sources; this is not an independent test.</p>
+        <div class="sources-grid">
+          <div><h3>Portmaster sources</h3><ul><li><a href="https://safing.io/features/" target="_blank" rel="noopener noreferrer">Features ↗</a></li><li><a href="https://safing.io/pricing/" target="_blank" rel="noopener noreferrer">Pricing and plans ↗</a></li><li><a href="https://github.com/safing/portmaster" target="_blank" rel="noopener noreferrer">Source and license ↗</a></li><li><a href="https://safing.io/business-model/" target="_blank" rel="noopener noreferrer">Business model ↗</a></li></ul></div>
+          <div><h3>GlassWire sources</h3><ul><li><a href="https://www.glasswire.com/features/" target="_blank" rel="noopener noreferrer">Features ↗</a></li><li><a href="https://www.glasswire.com/userguide/" target="_blank" rel="noopener noreferrer">Windows user guide ↗</a></li><li><a href="https://www.glasswire.com/pricing/" target="_blank" rel="noopener noreferrer">Pricing ↗</a></li><li><a href="https://www.glasswire.com/privacy/" target="_blank" rel="noopener noreferrer">Privacy policy ↗</a></li><li><a href="https://www.glasswire.com/license/" target="_blank" rel="noopener noreferrer">License terms ↗</a></li><li><a href="https://www.glasswire.com/changes/" target="_blank" rel="noopener noreferrer">Release notes ↗</a></li></ul></div>
+        </div>
+      </section>
+
+      <section class="section" id="en-install" aria-labelledby="en-install-title">
+        <div class="section-heading"><p class="eyebrow">Build and install</p><h2 id="en-install-title">How do I get Y-Apex?</h2></div>
+        <div class="install-status"><span class="status-pill">No public download</span><p>There is no public installer yet. Temporary CI artifacts are for testing and are not signed or recommended for installation.</p></div>
+        <h3>Build from source for development</h3>
+        <p>The solution requires Windows x64 and the .NET 10 SDK; restoring NuGet packages during the build requires internet access. The app itself makes no automatic network request.</p>
+        <pre><code>dotnet restore YApex.sln
+dotnet build YApex.sln -c Release --no-restore
+dotnet test YApex.sln -c Release --no-build</code></pre>
+        <p>Read the <a href="https://github.com/yswef/Y-Apex/blob/main/docs/build-local.md" target="_blank" rel="noopener noreferrer">local build guide</a> and <a href="https://github.com/yswef/Y-Apex/blob/main/docs/release.md" target="_blank" rel="noopener noreferrer">release gate</a>. Test firewall changes only in a VM with a restore snapshot.</p>
+      </section>
+
+      <section class="section faq-section" id="en-faq" aria-labelledby="en-faq-title">
+        <div class="section-heading"><p class="eyebrow">Straight answers</p><h2 id="en-faq-title">Frequently asked questions</h2></div>
+        <details><summary>Does Y-Apex block connections automatically?</summary><p>No. Viewing connections does not change the firewall. Applying a rule requires a preview and explicit confirmation. An unconfirmed change enters a 30-second rollback window.</p></details>
+        <details><summary>Does Allow open inbound connections?</summary><p>No. The current build adds an outbound allow rule only. Blocking creates inbound and outbound block rules; other Windows Firewall defaults remain in force.</p></details>
+        <details><summary>Is Y-Apex ready to replace Portmaster or GlassWire?</summary><p>No. It is an unreleased development project without a completed interactive Windows-VM install/block test, and it lacks secure DNS, domain filtering, and long-term history.</p></details>
+        <details><summary>Is WFP or strict mode available?</summary><p>No. The experimental WFP provider is unimplemented and strict mode is unavailable. Current rule management goes through Windows Firewall.</p></details>
+        <details><summary>What data is sent over the internet?</summary><p>The current source has no telemetry channel, updater, or network update source. Developer package restore is separate. Read the <a href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">privacy notice</a>.</p></details>
+        <details><summary>Does usage history survive a restart?</summary><p>No. ETW counters live in service memory from startup and reset when it stops. The Y-Apex rule journal is separate from network traffic history.</p></details>
+        <details><summary>What happens to rules when I uninstall?</summary><p>The interactive uninstaller asks before deleting Y-Apex rules and shared data. Choosing No or running a silent uninstall preserves them. See the <a href="https://github.com/yswef/Y-Apex/blob/main/docs/release.md" target="_blank" rel="noopener noreferrer">release documentation</a> before removing any software.</p></details>
+      </section>
+
+      <section class="section final-links" id="en-docs" aria-labelledby="en-docs-title">
+        <div><p class="eyebrow">Further reading</p><h2 id="en-docs-title">Project documentation</h2></div>
+        <div class="link-grid">
+          <a href="https://github.com/yswef/Y-Apex/blob/main/README.en.md" target="_blank" rel="noopener noreferrer">English README <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/architecture.md" target="_blank" rel="noopener noreferrer">Architecture <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/threat-model.md" target="_blank" rel="noopener noreferrer">Threat model <span>↗</span></a>
+          <a href="https://github.com/yswef/Y-Apex/blob/main/docs/testing.md" target="_blank" rel="noopener noreferrer">Testing <span>↗</span></a>
+          <a data-shared-link="comparison" href="https://github.com/yswef/Y-Apex/blob/main/docs/comparison.md" target="_blank" rel="noopener noreferrer">Detailed comparison <span>↗</span></a>
+          <a data-shared-link="privacy" href="https://github.com/yswef/Y-Apex/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">Privacy notice <span>↗</span></a>
+          <a data-shared-link="changelog" href="https://github.com/yswef/Y-Apex/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog <span>↗</span></a>
+          <a data-shared-link="issues" href="https://github.com/yswef/Y-Apex/issues" target="_blank" rel="noopener noreferrer">Report an issue <span>↗</span></a>
+        </div>
+      </section>
+      <footer class="site-footer"><span>Y-Apex · Open source under the MIT License</span><span>Documentation does not imply a recommended installer release.</span><a data-shared-link="repo" href="https://github.com/yswef/Y-Apex" target="_blank" rel="noopener noreferrer">Repository ↗</a></footer>
+    </div>
+  </main>
 </body>
 </html>
