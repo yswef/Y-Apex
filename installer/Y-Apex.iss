@@ -2,10 +2,10 @@
 #define AppName "Y-Apex"
 #define AppVersion "0.1.0"
 #define AppPublisher "ENG.YSWEF"
-#define AppId "{f35b5e2b-c6b4-4ebc-a965-4d27a2402f53}"
+
 
 [Setup]
-AppId={#AppId}
+AppId={{f35b5e2b-c6b4-4ebc-a965-4d27a2402f53}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
