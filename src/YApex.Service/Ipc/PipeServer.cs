@@ -70,6 +70,11 @@ public sealed partial class PipeServer : BackgroundService
             try
             {
                 await pipe.WaitForConnectionAsync(stoppingToken).ConfigureAwait(false);
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                request = await PipeProtocol.ReadRequestAsync(pipe, timeout.Token).ConfigureAwait(false);
+
+                // Windows requires reading pipe data before impersonating its client.
                 var clientSid = GetClientSid(pipe);
                 var sidAllowed = _accessPolicy.IsAllowed(clientSid);
                 if (!sidAllowed || !TryConsumeRateLimit())
@@ -78,9 +83,6 @@ public sealed partial class PipeServer : BackgroundService
                     continue;
                 }
 
-                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                timeout.CancelAfter(TimeSpan.FromSeconds(10));
-                request = await PipeProtocol.ReadRequestAsync(pipe, timeout.Token).ConfigureAwait(false);
                 var result = await HandleRequestAsync(request, timeout.Token).ConfigureAwait(false);
                 await PipeProtocol.WriteResponseAsync(pipe, request.RequestId, true, null, result, timeout.Token).ConfigureAwait(false);
             }
