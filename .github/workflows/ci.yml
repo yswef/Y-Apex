@@ -47,18 +47,50 @@ jobs:
       - name: Build installer and checksums
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path out/installer -Force | Out-Null
+          $ErrorActionPreference = 'Stop'
+          $installerOutput = Join-Path $env:GITHUB_WORKSPACE 'out/installer'
+          New-Item -ItemType Directory -Path $installerOutput -Force | Out-Null
           $compiler = Get-Command ISCC.exe -ErrorAction SilentlyContinue
-          $compilerPath = if ($null -ne $compiler) { $compiler.Source } else { $null }
+          $compilerPath = if ($null -ne $compiler) { $compiler.Path } else { $null }
+          $programFilesDirectories = @(
+            [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+            [Environment]::GetEnvironmentVariable('ProgramFiles')
+          ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
           if ([string]::IsNullOrWhiteSpace($compilerPath)) {
-            $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
-            $candidate = Join-Path $programFilesX86 'Inno Setup 6/ISCC.exe'
-            if (Test-Path -LiteralPath $candidate) { $compilerPath = $candidate }
+            foreach ($directory in $programFilesDirectories) {
+              $installations = Get-ChildItem -LiteralPath $directory -Directory -Filter 'Inno Setup*' -ErrorAction SilentlyContinue |
+                Sort-Object Name -Descending
+              foreach ($installation in $installations) {
+                $candidate = Join-Path $installation.FullName 'ISCC.exe'
+                if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                  $compilerPath = $candidate
+                  break
+                }
+              }
+              if (-not [string]::IsNullOrWhiteSpace($compilerPath)) { break }
+            }
           }
-          if ([string]::IsNullOrWhiteSpace($compilerPath)) { throw 'Inno Setup compiler was not found after installation.' }
-          & $compilerPath installer/Y-Apex.iss
-          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
-          ./tools/generate-sha256sums.ps1 -Target out/installer
+          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+            throw "Inno Setup compiler ISCC.exe was not found. Program Files roots checked: $($programFilesDirectories -join '; ')."
+          }
+          $installerScript = Join-Path $env:GITHUB_WORKSPACE 'installer/Y-Apex.iss'
+          if (-not (Test-Path -LiteralPath $installerScript -PathType Leaf)) {
+            throw "Installer script was not found: $installerScript"
+          }
+          foreach ($directory in @('ui', 'service', 'cli')) {
+            $payloadDirectory = Join-Path $env:GITHUB_WORKSPACE "out/portable/win-x64/$directory"
+            if (-not (Test-Path -LiteralPath $payloadDirectory -PathType Container)) {
+              throw "Portable package directory was not found: $payloadDirectory"
+            }
+          }
+          Write-Output "Using Inno Setup compiler: $compilerPath"
+          Write-Output "Compiling installer script: $installerScript"
+          & $compilerPath $installerScript
+          $compilerExitCode = $LASTEXITCODE
+          if ($compilerExitCode -ne 0) {
+            throw "Inno Setup failed with exit code $compilerExitCode."
+          }
+          ./tools/generate-sha256sums.ps1 -Target $installerOutput
       - name: Upload Windows test package
         uses: actions/upload-artifact@v7
         with:
