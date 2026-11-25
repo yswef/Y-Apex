@@ -90,11 +90,8 @@ jobs:
             $compilerExitCode = $LASTEXITCODE
             $compilerOutput | ForEach-Object { Write-Output "$_" }
             if ($compilerExitCode -ne 0) {
-              foreach ($diagnostic in ($compilerOutput | Select-Object -Last 20)) {
-                $message = "$diagnostic" -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
-                Write-Output "::error::$message"
-              }
-              throw "Inno Setup failed with exit code $compilerExitCode."
+              $diagnostics = ($compilerOutput | Select-Object -Last 20 | ForEach-Object { "$_" }) -join ' | '
+              throw "Inno Setup failed with exit code $compilerExitCode. Output: $diagnostics"
             }
             ./tools/generate-sha256sums.ps1 -Target $installerOutput
           }
