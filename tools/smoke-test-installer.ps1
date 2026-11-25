@@ -67,14 +67,15 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "The client SID could not be registered for the smoke test: $($registrationOutput -join ' ')"
     }
-    $stopOutput = & $serviceExe --uninstall-service 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "The installed service could not be stopped for pipe-ACL refresh: $($stopOutput -join ' ')"
-    }
-    $startOutput = & $serviceExe --install-service 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "The installed service could not be restarted after pipe-ACL refresh: $($startOutput -join ' ')"
-    }
+    $serviceForAclRefresh = Get-Service -Name $serviceName -ErrorAction Stop
+    $serviceForAclRefresh.Stop()
+    $serviceForAclRefresh.WaitForStatus(
+        [System.ServiceProcess.ServiceControllerStatus]::Stopped,
+        [TimeSpan]::FromSeconds(30))
+    $serviceForAclRefresh.Start()
+    $serviceForAclRefresh.WaitForStatus(
+        [System.ServiceProcess.ServiceControllerStatus]::Running,
+        [TimeSpan]::FromSeconds(30))
 
     $statusOutput = & $cliExe status 2>&1
     $statusCode = $LASTEXITCODE
@@ -122,5 +123,7 @@ if ($emptyEmergencyVerified -and $null -eq $remainingService -and -not (Test-Pat
     Remove-Item -LiteralPath $dataDirectory -Recurse -Force
 }
 if ($null -ne $failure) {
+    $failureText = "$failure" -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+    Write-Output "::error file=tools/smoke-test-installer.ps1,title=Installer smoke test failed::$failureText"
     throw $failure
 }
